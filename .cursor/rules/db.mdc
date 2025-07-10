@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+Use Prisma ORM for type-safe queries and migration management.
+
+OR use pg with sql-template-strings for raw queries when Prisma isn’t suitable.
+
+Define models with clear naming, relationships, constraints, and indexes.
+
+Use database migrations to keep schema consistent (prisma migrate, sqitch, etc.).
+
+Keep SQL logic out of routes/controllers — move to services or repositories.
+
+Never expose raw queries or sensitive fields (e.g., passwords, tokens) in APIs.
+
+Prefer UUIDs or cuid() as primary keys when applicable.
+
+Always hash sensitive data (e.g., bcrypt for passwords).
+
+Seed initial data with care using dedicated scripts (prisma db seed, etc.).
+
+Regularly back up the database and monitor performance (index slow queries).

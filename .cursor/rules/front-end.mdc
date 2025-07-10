@@ -1,0 +1,26 @@
+---
+alwaysApply: true
+---
+Use functional components with TypeScript and the latest React best practices.
+
+Always use server components by default in Next.js 13+ unless interactivity is needed.
+
+Use shadcn/ui for accessible, headless UI components; follow its patterns and customization practices.
+
+Ensure visual consistency with Tailwind utility classes (rounded-2xl, shadow-md, p-4, text-sm, etc.).
+
+Optimize for accessibility (ARIA labels, focus outlines, alt text for images).
+
+Structure files using atomic design (components/, pages/, utils/, hooks/, etc.).
+
+Handle forms using react-hook-form + zod for type-safe validation.
+
+Prefer server-side data fetching (getServerSideProps, app router, server actions) over client-side useEffect.
+
+Ensure mobile responsiveness using Tailwind breakpoints (sm:, md:, lg:).
+
+Add framer-motion transitions for modals, dropdowns, and loading states for a smooth UX.
+
+Keep code DRY and modular; extract repeated logic into custom hooks and utilities.
+
+Follow Git best practices: clear commit messages, use feature branches, require PR reviews.

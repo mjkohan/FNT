@@ -1,0 +1,22 @@
+---
+alwaysApply: true
+---
+Use multi-stage Docker builds to separate dependencies, build artifacts, and runtime.
+
+Set resource limits (mem_limit, cpus) in docker-compose for each service.
+
+Define all services (frontend, backend, db) in a single docker-compose.yml.
+
+Use .dockerignore to keep builds clean and fast.
+
+Set up proper volumes for hot reload in development (volumes: in compose).
+
+Use healthchecks for services to ensure proper startup (healthcheck: in compose).
+
+Keep environment variables in .env, never hardcoded.
+
+Use named networks in docker-compose to isolate app traffic.
+
+Keep production images minimal (no dev tools), using node:alpine or similar.
+
+For deployment, use .env.production, build with --target=production, and use docker secrets or a secret manager for sensitive data.

@@ -1,0 +1,24 @@
+---
+alwaysApply: true
+---
+Use TypeScript for all backend code.
+
+Structure API with MVC or feature-based architecture (routes/, controllers/, services/, middleware/, types/).
+
+Use express-async-handler or similar to handle async errors.
+
+Validate input with zod or Joi, especially on API endpoints.
+
+Use environment variables (dotenv) for config (e.g., DB_URL, PORT).
+
+Keep routes RESTful and modularized (/api/v1/users, /api/v1/auth, etc.).
+
+Centralize error handling using a global error middleware.
+
+Protect routes using middleware (e.g., auth check, role-based access control).
+
+Use logging (e.g., morgan, winston) for debugging and monitoring in dev/prod.
+
+Use helmet, cors, rate-limit, and other security middleware in production.
+
+Write unit and integration tests using Jest or Vitest + supertest.
