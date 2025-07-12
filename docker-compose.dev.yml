@@ -49,6 +49,7 @@ services:
     working_dir: /usr/src/app
     volumes:
       - ./server:/usr/src/app
+      - /usr/src/app/node_modules
     command: npx prisma studio --port 5555 --browser none
     ports:
       - "5555:5555"
