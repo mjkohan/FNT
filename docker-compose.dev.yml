@@ -44,6 +44,8 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
 
+
+
   prisma-studio:
     image: node:lts-alpine3.17
     working_dir: /usr/src/app

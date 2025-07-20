@@ -38,6 +38,19 @@ services:
     networks:
       - prisma-network
 
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3000'
+    depends_on:
+      - server
+    networks:
+      - prisma-network
+    environment:
+      - NODE_ENV=production
+
   prisma-studio:
     image: node:lts-alpine3.17
     working_dir: /usr/src/app
