@@ -7,6 +7,9 @@ import * as z from "zod"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,6 +28,10 @@ type LoginFormData = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error");
 
   const {
     register,
@@ -36,13 +43,23 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      // TODO: Implement login logic
-      console.log("Login data:", data)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('here1')
+      const res = await signIn("credentials", {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      })
+      console.log(res)
+      if (res?.error) {
+        setError(res.error === "CredentialsSignin" ? "Invalid email or password" : (res.error || "Login failed"))
+      } else if (res?.ok) {
+        router.push("/dashboard")
+      }
     } catch (error) {
-      console.error("Login error:", error)
+      console.log(error)
+      setError("Login failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -137,6 +154,13 @@ export default function LoginPage() {
                 )}
               </div>
 
+              {/* Show error from signIn or from URL query param */}
+              {(error || urlError === "CredentialsSignin") && (
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-sm text-destructive text-center">
+                  {error || (urlError === "CredentialsSignin" ? "Invalid email or password" : urlError)}
+                </motion.p>
+              )}
+
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -153,7 +177,7 @@ export default function LoginPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/auth/signup"
                   className="text-primary hover:text-primary/80 font-medium transition-colors"
