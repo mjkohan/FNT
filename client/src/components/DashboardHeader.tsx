@@ -9,7 +9,7 @@ export default function DashboardHeader() {
   const { data: session } = useSession();
   if (!session?.user) return null;
   return (
-    <header className="w-full flex items-center h-16 justify-between pl-6  bg-card/80 border-b border-border/50 shadow-sm  ">
+    <header className="w-full pl-20 flex items-center h-16 justify-between pl-6  bg-card/80 border-b border-border/50 shadow-sm  ">
       <div className="flex items-center gap-2">
         
         <span className="font-bold text-4xl tracking-wide">FNT</span>
@@ -18,11 +18,11 @@ export default function DashboardHeader() {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-full min-w-[260px] px-6 py-0 rounded-none bg-transparent border-0 border-l-1 border-muted shadow-none hover:bg-muted/30 focus-visible:ring-0 focus-visible:ring-offset-0 flex flex-row items-center gap-4 justify-between"
+            className="h-full  md:min-w-[260px] px-6 py-0 rounded-none bg-transparent border-0 border-l-1 border-muted shadow-none hover:bg-muted/30 focus-visible:ring-0 focus-visible:ring-offset-0 flex flex-row items-center gap-4 justify-between"
             aria-label="User menu"
           >
             <div className="flex flex-col items-start text-left flex-1">
-              <span className="font-bold text-base text-white leading-tight truncate max-w-[170px]">
+              <span className="font-bold text-base text-primary leading-tight truncate max-w-[170px]">
                 {session.user.email}
               </span>
               <span className="text-xs text-muted-foreground mt-0.5">FNT Basic</span>
