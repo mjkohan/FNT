@@ -5,7 +5,6 @@ export default async function DashboardPage() {
   const session = await auth()
   if (!session?.user) return null
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/20 to-muted/40 p-4">
       <Card className="shadow-xl border-border/50 bg-card/80 backdrop-blur-sm w-full max-w-md">
         <CardHeader>
           <CardTitle>Welcome, {session?.user?.email}!</CardTitle>
@@ -14,6 +13,6 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground">This is your dashboard. You are logged in.</p>
         </CardContent>
       </Card>
-    </div>
+    
   )
 } 
