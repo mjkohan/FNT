@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
@@ -46,20 +46,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        (token as Record<string, any>).id = user.id;
-        (token as Record<string, any>).email = user.email;
-        (token as Record<string, any>).accessToken = (user as { token: string }).token;
+      if (user && 'id' in user && 'email' in user && 'token' in user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.accessToken = user.token;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        (session.user as { id: string; email: string }) = {
-          id: (token as Record<string, any>).id as string,
-          email: (token as Record<string, any>).email as string,
-        };
-        ((session as unknown) as { accessToken: string }).accessToken = (token as Record<string, any>).accessToken as string;
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.accessToken = token.accessToken as string;
       }
       return session;
     },
