@@ -9,10 +9,10 @@ export default function DashboardHeader() {
   const { data: session } = useSession();
   if (!session?.user) return null;
   return (
-    <header className="w-full pl-20 flex items-center h-16 justify-between pl-6  bg-card/80 border-b border-border/50 shadow-sm  ">
-      <div className="flex items-center gap-2">
-        
-        <span className="font-bold text-4xl tracking-wide">FNT</span>
+    <header className="w-full pl-18 md:pl-0 flex items-center h-16 justify-between pl-6  bg-card/80 border-b border-border/50 shadow-sm  ">
+      <div className="flex items-center justify-center gap-2">
+        <Image src="/logo1.png" alt="FNT" width={100} height={50} />
+        {/* <span className="font-bold text-4xl tracking-wide">FNT</span> */}
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
