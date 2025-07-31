@@ -151,10 +151,11 @@ export default function CryptoPage() {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-y-auto flex-1 min-h-0 pr-2 scrollbar-hide">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 overflow-y-auto flex-1 min-h-0 p-4 scrollbar-hide">
         {filtered.map((coin: Coin) => (
           <CryptoCard
             key={coin.id}
+            id={coin.id}
             name={coin.name}
             image={coin.image}
             price={coin.current_price}

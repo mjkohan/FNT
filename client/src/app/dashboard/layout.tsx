@@ -1,12 +1,17 @@
 "use client";
 import { SessionProvider } from "next-auth/react";
 import DashboardHeader from "@/components/DashboardHeader";
-import Sidebar from "@/components/Sidebar";
+import { AppSidebar } from "@/components/Sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname, useRouter } from "next/navigation";
 import { Bitcoin, BarChart2, Building2, TrendingUp, DollarSign } from "lucide-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+
+import {
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
 
 function DashboardTabs() {
   const pathname = usePathname();
@@ -20,7 +25,7 @@ function DashboardTabs() {
   ];
   const current = pathname.split("/")[2] || "crypto";
   return (
-    <Tabs value={current} className="w-full max-w-6xl mx-auto mt-4">
+    <Tabs value={current} className="w-full max-w-4xl mx-auto mt-4">
       <TabsList className="w-full grid grid-cols-5 gap-2 bg-muted/60 rounded-2xl p-1 shadow-none">
         {tabs.map(tab => {
           const Icon = tab.icon;
@@ -41,22 +46,29 @@ function DashboardTabs() {
   );
 }
 
+
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
+  const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+  const isDetailPage = segments.length > 2; 
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-muted/20 to-muted/40 ">
-        <SessionProvider>
-          <DashboardHeader />
-          <div className="flex flex-1 flex-row w-full  h-0">
-            <Sidebar />
-            <main className="flex-1 flex flex-col w-full min-h-0 h-[calc(100vh-80px)]">
-              <DashboardTabs />
+      <SessionProvider>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <DashboardHeader />
+            <div className="flex flex-1 flex-col gap-4 p-4">
+              {!isDetailPage && <DashboardTabs />}
+              
               {children}
-            </main>
-          </div>
-        </SessionProvider>
-      </div>
+            </div>
+          </SidebarInset>
+        </SidebarProvider>
+      </SessionProvider>
     </QueryClientProvider>
   );
 } 

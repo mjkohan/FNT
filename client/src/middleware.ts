@@ -2,7 +2,12 @@
 import { auth } from "@/auth"
  
 export default auth((req) => {
-  if (!req.auth && req.nextUrl.pathname !== "/auth/login" && req.nextUrl.pathname !== "/auth/signup") {
+  const isAuthPage = req.nextUrl.pathname === "/auth/login" || req.nextUrl.pathname === "/auth/signup";
+  if (req.auth && isAuthPage) {
+    const newUrl = new URL("/dashboard", req.nextUrl.origin);
+    return Response.redirect(newUrl);
+  }
+  if (!req.auth && !isAuthPage) {
     const newUrl = new URL("/auth/login", req.nextUrl.origin)
     return Response.redirect(newUrl)
   }

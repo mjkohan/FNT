@@ -4,17 +4,45 @@ import { useSession, signOut } from "next-auth/react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
-
+import { useState } from "react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 export default function DashboardHeader() {
   const { data: session } = useSession();
   if (!session?.user) return null;
   return (
-    <header className="w-full pl-18 md:pl-0 flex items-center h-16 justify-between pl-6  bg-card/80 border-b border-border/50 shadow-sm  ">
-      <div className="flex items-center justify-center gap-2">
-        <Image src="/logo1.png" alt="FNT" width={100} height={50} />
-        {/* <span className="font-bold text-4xl tracking-wide">FNT</span> */}
-      </div>
-      <DropdownMenu>
+
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator
+            orientation="vertical"
+            className="mr-2 data-[orientation=vertical]:h-4"
+          />
+          <Image src="/logo1.png" alt="FNT" width={100} height={50} />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="#">
+                  Building Your Application
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -52,6 +80,7 @@ export default function DashboardHeader() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    </header>
+        </header>
+    
   );
 } 
