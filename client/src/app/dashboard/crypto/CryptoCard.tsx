@@ -17,7 +17,7 @@ export default function CryptoCard({ name, image, price, priceChange, marketCapR
   const percentColor = priceChange > 0 ? "text-green-600" : priceChange < 0 ? "text-red-600" : "text-muted-foreground";
   return (
     <Link href={`/dashboard/crypto/${id}`} className="block group focus:outline-none">
-      <Card className="flex flex-col items-center justify-center p-6 shadow-lg rounded-2xl bg-card/90 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-transform duration-200 relative max-h-[220px] cursor-pointer">
+      <Card className="flex flex-col items-center justify-center p-6 shadow-lg rounded-2xl bg-card/90 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-transform duration-200 relative max-h-[300px] min-h-[300px] cursor-pointer">
         {/* Market Cap Rank */}
         <span className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
           #{marketCapRank}
@@ -26,7 +26,7 @@ export default function CryptoCard({ name, image, price, priceChange, marketCapR
         <Image src={image} alt={name} width={48} height={48} className="mb-3 rounded-full shadow" />
         <CardContent className="p-0 flex flex-col items-center">
           <span className="text-xs uppercase text-muted-foreground mb-1">{symbol}</span>
-          <span className="text-base font-mono text-foreground">${price.toLocaleString()}</span>
+          <span className="text-base font-mono text-foreground">${price}</span>
           {showChange ? (
             <span className={`text-xs font-medium mt-1 ${percentColor}`}>
               {priceChange > 0 ? "+" : ""}{priceChange.toFixed(2)}%

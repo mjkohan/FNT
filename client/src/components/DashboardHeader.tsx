@@ -5,6 +5,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Button } from "@/components/ui/button";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,32 +18,80 @@ import { Separator } from "@/components/ui/separator";
 import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+
 export default function DashboardHeader() {
   const { data: session } = useSession();
-  if (!session?.user) return null;
-  return (
+  const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+  const isDetailPage = segments.length > 2;
 
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Image src="/logo1.png" alt="FNT" width={100} height={50} />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="#">
-                  Building Your Application
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <DropdownMenu>
+  // Generate breadcrumb items based on current path
+  const generateBreadcrumbItems = () => {
+    if (!isDetailPage) return null;
+
+    const breadcrumbItems = [];
+    
+    // Add Dashboard as first item
+    breadcrumbItems.push(
+      <BreadcrumbItem key="dashboard" className="hidden md:block">
+        <BreadcrumbLink href="/dashboard">
+          Dashboard
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+    );
+
+    // Add section (crypto, stocks, etc.)
+    if (segments[1]) {
+      breadcrumbItems.push(
+        <BreadcrumbSeparator key="sep1" className="hidden md:block" />
+      );
+      breadcrumbItems.push(
+        <BreadcrumbItem key="section" className="hidden md:block">
+          <BreadcrumbLink href={`/dashboard/${segments[1]}`}>
+            {segments[1].charAt(0).toUpperCase() + segments[1].slice(1)}
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      );
+    }
+
+    // Add detail page if it exists
+    if (segments[2]) {
+      breadcrumbItems.push(
+        <BreadcrumbSeparator key="sep2" className="hidden md:block" />
+      );
+      breadcrumbItems.push(
+        <BreadcrumbItem key="detail">
+          <BreadcrumbPage>
+            {segments[2].charAt(0).toUpperCase() + segments[2].slice(1)}
+          </BreadcrumbPage>
+        </BreadcrumbItem>
+      );
+    }
+
+    return breadcrumbItems;
+  };
+
+  return (
+    <header className="flex h-16 shrink-0 justify-between items-center gap-2 border-b px-4">
+      <div className="flex items-center gap-2">
+      <SidebarTrigger className="-ml-1" />
+      <Separator
+        orientation="vertical"
+        className="mr-2 data-[orientation=vertical]:h-4"
+      />
+      <Image src="/logo1.png" alt="FNT" width={100} height={50} />
+      
+      {isDetailPage && (
+        <Breadcrumb>
+          <BreadcrumbList>
+            {generateBreadcrumbItems()}
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+      </div>
+      
+      
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
@@ -51,7 +100,7 @@ export default function DashboardHeader() {
           >
             <div className="flex flex-col items-start text-left flex-1">
               <span className="font-bold text-base text-primary leading-tight truncate max-w-[170px]">
-                {session.user.email}
+                {session?.user?.email}
               </span>
               <span className="text-xs text-muted-foreground mt-0.5">FNT Basic</span>
             </div>
@@ -80,7 +129,6 @@ export default function DashboardHeader() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-        </header>
-    
+    </header>
   );
 } 
