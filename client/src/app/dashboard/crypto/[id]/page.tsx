@@ -4,7 +4,9 @@ import { useParams } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import TradingViewChart from "@/components/TradingViewChart";
-
+import { BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 async function fetchCrypto() {
   const res = await fetch("/api/crypto", { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch crypto data");
@@ -15,13 +17,13 @@ export default function CryptoDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, error } = useQuery({
     queryKey: ["crypto"],
-    queryFn: fetchCrypto, 
+    queryFn: fetchCrypto,
   });
   const coin = data?.find((c: any) => c.id === id);
 
   if (isLoading) return <div className="text-center py-12 text-muted-foreground text-lg">Loading...</div>;
   if (error || !coin) return <div className="text-center py-12 text-destructive text-lg">Coin not found</div>;
-
+  console.log(coin);
   // Group related fields
   const priceFields = [
     { label: "Current Price", value: `$${coin.current_price.toLocaleString()}`, color: "bg-purple-100 text-purple-700" },
@@ -47,20 +49,51 @@ export default function CryptoDetailPage() {
   ];
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-8 flex flex-col gap-8">
-      <Card className="flex flex-col md:flex-row items-center gap-6 p-6">
-        <Image src={coin.image} alt={coin.name} width={64} height={64} className="rounded-full shadow" />
-        <div className="flex-1 flex flex-col gap-2">
-          <h2 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            {coin.name} <span className="text-base text-muted-foreground uppercase">({coin.symbol})</span>
-          </h2>
-          <div className="flex flex-wrap gap-4 mt-2">
-            <span className="text-lg font-mono">${coin.current_price.toLocaleString()}</span>
-            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-semibold">Rank #{coin.market_cap_rank}</span>
-            <span className="text-xs bg-muted px-2 py-1 rounded-full font-semibold">Market Cap: ${coin.market_cap.toLocaleString()}</span>
-            <span className="text-xs bg-muted px-2 py-1 rounded-full font-semibold">Volume: ${coin.total_volume.toLocaleString()}</span>
+    <div className="w-full  mt-8 flex flex-col gap-8">
+      <Card className="flex flex-col md:flex-row items-center justify-between gap-6 p-6">
+        <div className="flex items-center gap-4">
+          <Image src={coin.image} alt={coin.name} width={64} height={64} className="rounded-full shadow" />
+          <div className="flex-1 flex flex-col gap-2">
+            <h2 className="text-3xl font-bold text-foreground uppercase flex items-center gap-2">
+              {coin.symbol}
+            </h2>
+            <div className="flex flex-wrap gap-4 mt-2">
+              <span className="text-2xl font-semibold text-muted-foreground italic ">{coin.name}</span>
+            </div>
           </div>
         </div>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 flex-col">
+            <div className="text-center">
+              <span className="text-3xl font-bold text-foreground">${coin.current_price}</span>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center gap-2 justify-center">
+                <span
+                  className={`text-xl font-semibold ${coin.price_change_percentage_24h > 0
+                      ? 'text-green-600'
+                      : coin.price_change_percentage_24h < 0
+                        ? 'text-red-600'
+                        : 'text-gray-600'
+                    }`}
+                >
+                  {coin.price_change_percentage_24h > 0 ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%
+                </span>
+              </div>
+            </div>
+          </div>
+          <Link href={`/dashboard/crypto/${coin.symbol.toLowerCase()}`}>
+               <Button 
+                 variant="outline" 
+                 size="lg"
+                 className="bg-gradient-to-r text-white hover:text-white cursor-pointer from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700  border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+               >
+                 <BarChart3 className="w-4 h-4 mr-2" />
+                 Analytics
+               </Button>
+             </Link>
+        </div>
+
       </Card>
       <div className="flex-1 overflow-y-auto min-h-0 max-h-[60vh] flex flex-col gap-6 scrollbar-hide">
         {/* Price Box */}
@@ -101,23 +134,9 @@ export default function CryptoDetailPage() {
         </Card>
         <TradingViewChart symbol={coin.name} />
       </div>
-      
-      {/* TradingView Widget */}
-      {/* <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Chart</h3>
-        <div className="w-full h-[400px]">
-          <iframe
-            src={`https://www.tradingview.com/embed-widget/symbol-overview/?symbol=BINANCE:${coin.symbol.toUpperCase()}USDT&locale=en`}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allowFullScreen
-            className="rounded-xl border border-border/30"
-            title={`${coin.symbol.toUpperCase()} Chart`}
-          />
-        </div>
-      </Card> */}
-      
+
+
+
     </div>
   );
 } 
