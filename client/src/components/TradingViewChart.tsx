@@ -12,7 +12,8 @@ interface TradingViewChartProps {
 
 export default function TradingViewChart({ symbol, loader }: TradingViewChartProps) {
     const onLoadScriptRef = useRef<(() => void) | null>(null);
-    const { theme, resolvedTheme } = useTheme();
+    // Get current theme for chart styling
+    const { resolvedTheme } = useTheme();
 
     useEffect(
         () => {
@@ -32,7 +33,7 @@ export default function TradingViewChart({ symbol, loader }: TradingViewChartPro
 
             tvScriptLoadingPromise.then(() => onLoadScriptRef.current && onLoadScriptRef.current());
 
-            return () => onLoadScriptRef.current = null;
+            return () => { onLoadScriptRef.current = null; };
 
             function createWidget() {
                 if (document.getElementById('technical-analysis-chart-demo') && 'TradingView' in window) {
@@ -53,7 +54,6 @@ export default function TradingViewChart({ symbol, loader }: TradingViewChartPro
                         hide_side_toolbar: false,
                         allow_symbol_change: true,
                         save_image: false,
-                        // studies: ["ROC@tv-basicstudies","StochasticRSI@tv-basicstudies","MASimple@tv-basicstudies"],
                         show_popup_button: true,
                         popup_width: "1000",
                         popup_height: "650",
@@ -64,7 +64,7 @@ export default function TradingViewChart({ symbol, loader }: TradingViewChartPro
                 }
             }
         },
-        [symbol, resolvedTheme] // Add resolvedTheme to dependencies to recreate widget when theme changes
+        [symbol, resolvedTheme]
     );
 
     return (
