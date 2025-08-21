@@ -7,6 +7,7 @@ import TradingViewChart from "@/components/TradingViewChart";
 import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import NewsSection from "@/components/NewsSection";
 
 async function fetchCrypto() {
   const res = await fetch("/api/crypto", { cache: "no-store" });
@@ -283,19 +284,7 @@ export default function CryptoDetailPage() {
         </Card>
 
         {/* News Section */}
-        <Card className="p-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg text-foreground">
-              Related News
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">Coming soon...</p>
-              <p className="text-sm mt-2">Stay tuned for the latest crypto news and updates</p>
-            </div>
-          </CardContent>
-        </Card>
+        <NewsSection coinName={coin.name} coinSymbol={coin.symbol} />
       </div>
     </div>
   );
