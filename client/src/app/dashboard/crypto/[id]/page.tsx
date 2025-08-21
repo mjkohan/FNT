@@ -49,8 +49,8 @@ export default function CryptoDetailPage() {
   ];
 
   return (
-    <div className="w-full  mt-8 flex flex-col gap-8">
-      <Card className="flex flex-col md:flex-row items-center justify-between gap-6 p-6">
+    <div className="w-full  mt-8 flex flex-col ">
+      <Card className="flex rounded-none flex-col md:flex-row items-center justify-between  p-6">
         <div className="flex items-center gap-4">
           <Image src={coin.image} alt={coin.name} width={64} height={64} className="rounded-full shadow" />
           <div className="flex-1 flex flex-col gap-2">
@@ -71,10 +71,10 @@ export default function CryptoDetailPage() {
               <div className="flex items-center gap-2 justify-center">
                 <span
                   className={`text-xl font-semibold ${coin.price_change_percentage_24h > 0
-                      ? 'text-green-600'
-                      : coin.price_change_percentage_24h < 0
-                        ? 'text-red-600'
-                        : 'text-gray-600'
+                    ? 'text-green-600'
+                    : coin.price_change_percentage_24h < 0
+                      ? 'text-red-600'
+                      : 'text-gray-600'
                     }`}
                 >
                   {coin.price_change_percentage_24h > 0 ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%
@@ -83,56 +83,99 @@ export default function CryptoDetailPage() {
             </div>
           </div>
           <Link href={`/dashboard/crypto/${coin.symbol.toLowerCase()}`}>
-               <Button 
-                 variant="outline" 
-                 size="lg"
-                 className="bg-gradient-to-r text-white hover:text-white cursor-pointer from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700  border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-               >
-                 <BarChart3 className="w-4 h-4 mr-2" />
-                 Analytics
-               </Button>
-             </Link>
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-gradient-to-r text-white hover:text-white cursor-pointer from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700  border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </Button>
+          </Link>
         </div>
 
       </Card>
-      <div className="flex-1 overflow-y-auto min-h-0 max-h-[60vh] flex flex-col gap-6 scrollbar-hide">
-        {/* Price Box */}
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-2 text-purple-700">Price & Change</h3>
-          <div className="flex flex-wrap gap-3">
-            {priceFields.map(f => (
-              <span key={f.label} className={`px-3 py-2 rounded-lg font-mono text-sm font-semibold ${f.color}`}>{f.label}: {f.value}</span>
-            ))}
-          </div>
-        </Card>
-        {/* Supply Box */}
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-2 text-blue-700">Supply</h3>
-          <div className="flex flex-wrap gap-3">
-            {supplyFields.map(f => (
-              <span key={f.label} className={`px-3 py-2 rounded-lg font-mono text-sm font-semibold ${f.color}`}>{f.label}: {f.value}</span>
-            ))}
-          </div>
-        </Card>
-        {/* Cap/Volume Box */}
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-2 text-yellow-700">Market Cap & Volume</h3>
-          <div className="flex flex-wrap gap-3">
-            {capFields.map(f => (
-              <span key={f.label} className={`px-3 py-2 rounded-lg font-mono text-sm font-semibold ${f.color}`}>{f.label}: {f.value}</span>
-            ))}
-          </div>
-        </Card>
-        {/* ATH/ATL Box */}
-        <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-2 text-pink-700">ATH & ATL</h3>
-          <div className="flex flex-wrap gap-3">
-            {athAtlFields.map(f => (
-              <span key={f.label} className={`px-3 py-2 rounded-lg font-mono text-sm font-semibold ${f.color}`}>{f.label}: {f.value}</span>
-            ))}
-          </div>
-        </Card>
-        <TradingViewChart symbol={coin.name} />
+      <div className="flex-1  flex flex-col ">
+        
+        <div className="flex">
+          <Card className="p-4 rounded-none w-1/2 flex flex-row justify-between">
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">Market Cap Rank</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.market_cap_rank}
+              </div>
+            </div>
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">Market Cap</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.market_cap}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 rounded-none w-1/2 flex flex-row justify-between">
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">24h High</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.high_24h}
+              </div>
+            </div>
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">24h Low</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.low_24h}
+              </div>
+            </div>
+          </Card>
+
+        </div>
+        <div className="flex">
+          <Card className="p-4 rounded-none w-1/2 flex flex-row justify-between">
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">ATH</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.ath}
+              </div>
+            </div>
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">ATH Change %</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.ath_change_percentage}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-4 rounded-none w-1/2 flex flex-row justify-between">
+            <div >
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">ATL</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.atl}
+              </div>
+            </div>
+            <div >
+                <h3 className="text-lg font-semibold mb-2 text-purple-700">ATL Change %</h3>
+              <div className="flex flex-wrap gap-3">
+                {coin.atl_change_percentage}
+              </div>
+            </div>
+          </Card>
+
+        </div>
+        <div className="flex">
+          <Card className=" rounded-none p-0 w-1/2 ">
+          <TradingViewChart symbol={coin.name} />
+          </Card>
+
+          <Card className="p-4 w-1/2 items-center justify-center rounded-none ">
+            
+              <h3 className="text-lg font-semibold mb-2 text-purple-700">Related News(soon ...)</h3>
+              
+            
+          </Card>
+
+        </div>
+
+        
       </div>
 
 

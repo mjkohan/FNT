@@ -1,20 +1,30 @@
-import {useEffect, useRef} from "react";
-let tvScriptLoadingPromise;
+"use client";
 
-export default function TradingViewChart({ symbol, loader }) {
-    const onLoadScriptRef = useRef();
+import { useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
+
+let tvScriptLoadingPromise: Promise<void>;
+
+interface TradingViewChartProps {
+    symbol: string;
+    loader?: boolean;
+}
+
+export default function TradingViewChart({ symbol, loader }: TradingViewChartProps) {
+    const onLoadScriptRef = useRef<(() => void) | null>(null);
+    const { theme, resolvedTheme } = useTheme();
 
     useEffect(
         () => {
             onLoadScriptRef.current = createWidget;
 
             if (!tvScriptLoadingPromise) {
-                tvScriptLoadingPromise = new Promise((resolve) => {
+                tvScriptLoadingPromise = new Promise<void>((resolve) => {
                     const script = document.createElement('script');
                     script.id = 'tradingview-widget-loading-script';
                     script.src = 'https://s3.tradingview.com/tv.js';
                     script.type = 'text/javascript';
-                    script.onload = resolve;
+                    script.onload = () => resolve();
 
                     document.head.appendChild(script);
                 });
@@ -26,7 +36,10 @@ export default function TradingViewChart({ symbol, loader }) {
 
             function createWidget() {
                 if (document.getElementById('technical-analysis-chart-demo') && 'TradingView' in window) {
-                    new window.TradingView.widget({
+                    // Determine the theme to use - prefer resolvedTheme over theme for more accurate detection
+                    const chartTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+                    
+                    new (window as any).TradingView.widget({
                         container_id: "technical-analysis-chart-demo",
                         width: "100%",
                         height: "100%",
@@ -34,7 +47,7 @@ export default function TradingViewChart({ symbol, loader }) {
                         symbol: symbol,
                         interval: "120",
                         timezone: "exchange",
-                        theme: "dark",
+                        theme: chartTheme,
                         style: "1",
                         withdateranges: true,
                         hide_side_toolbar: false,
@@ -45,22 +58,19 @@ export default function TradingViewChart({ symbol, loader }) {
                         popup_width: "1000",
                         popup_height: "650",
                         locale: "en",
-                        backgroundColor:"#131316",
+                        backgroundColor: chartTheme === 'dark' ? "#131316" : "#ffffff",
                         enable_publishing: true,
-
                     });
                 }
             }
         },
-        [symbol]
+        [symbol, resolvedTheme] // Add resolvedTheme to dependencies to recreate widget when theme changes
     );
+
     return (
-        <div className="min-h-[600px] relative bg-slate-400">
-            
-            
+        <div className="min-h-[600px] relative bg-muted">
             <div className="h-full">
                 {symbol && symbol !== "NOT_FOUND" && (
-            
                     <div className='tradingview-widget-container'>
                         <div id='technical-analysis-chart-demo' />
                     </div>
