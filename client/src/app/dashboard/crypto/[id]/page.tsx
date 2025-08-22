@@ -130,7 +130,7 @@ export default function CryptoDetailPage() {
               </div>
             </div>
             
-            <Link href={`/dashboard/crypto/${coin.symbol.toLowerCase()}`}>
+            <Link href={`/dashboard/crypto/${id}/analytics`}>
               <Button
                 variant="outline"
                 size="lg"
