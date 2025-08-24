@@ -7,6 +7,8 @@ import * as z from "zod"
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +33,8 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
 
   const {
     register,
@@ -42,13 +46,41 @@ export default function SignupPage() {
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true)
+    setError(null)
     try {
-      // TODO: Implement signup logic
-      console.log("Signup data:", data)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      console.log('Registering user:', data)
+      console.log(process.env.NEXT_PUBLIC_API_URL + "/auth/register")
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          name: data.name,
+        }),
+      })
+      console.log('Registration response:', res)
+      if (!res.ok) {
+        const err = await res.json()
+        console.log('Registration error:', err)
+        setError(err?.error || "Registration failed")
+        setIsLoading(false)
+        return
+      }
+      
+      const loginRes = await signIn("credentials", {
+        redirect: false,
+        email: data.email,
+        password: data.password,
+      })
+      if (loginRes?.ok) {
+        router.push("/dashboard")
+      } else {
+        setError(loginRes?.error || "Login after registration failed")
+      }
     } catch (error) {
-      console.error("Signup error:", error)
+      console.log('Registration exception:', error)
+      setError("Registration failed. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -203,6 +235,12 @@ export default function SignupPage() {
                   </motion.p>
                 )}
               </div>
+
+              {error && (
+                <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-sm text-destructive text-center">
+                  {error}
+                </motion.p>
+              )}
 
               <motion.div
                 whileHover={{ scale: 1.02 }}
