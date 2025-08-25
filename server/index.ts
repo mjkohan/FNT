@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { PrismaClient } from './generated/prisma_client';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
+import newsRoutes from './routes/news';
 
 // Load environment variables
 dotenv.config();
@@ -26,6 +27,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/news', newsRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

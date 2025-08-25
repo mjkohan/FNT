@@ -9,7 +9,10 @@ RUN npm install -g nodemon
 COPY package.json ./
 
 # Install dependencies (including devDependencies for development)
-RUN npm install --production=false 
+RUN npm install --production=false
+
+# Install Redis client dependencies
+RUN npm install redis ioredis 
 
 # Verify Prisma is installed
 RUN npx prisma --version

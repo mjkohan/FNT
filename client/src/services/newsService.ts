@@ -19,30 +19,10 @@ export interface NewsResponse {
 }
 
 export class NewsService {
-  private static readonly BASE_URL = 'https://newsapi.org/v2/everything';
-  private static readonly API_KEY = process.env.NEXT_PUBLIC_NEWS_API_KEY;
+  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
   static async fetchCryptoNews(query: string, page: number = 1): Promise<NewsResponse> {
-    if (!this.API_KEY) {
-      throw new Error('News API key not configured');
-    }
-
-    // Calculate date for last 24 hours
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const fromDate = yesterday.toISOString().split('T')[0];
-
-    const params = new URLSearchParams({
-      q: query,
-      from: fromDate,
-      sortBy: 'popularity',
-      apiKey: this.API_KEY,
-      language: 'en',
-      pageSize: '10',
-      page: page.toString()
-    });
-
-    const url = `${this.BASE_URL}?${params.toString()}`;
+    const url = `${this.BASE_URL}/news/crypto?query=${encodeURIComponent(query)}&page=${page}`;
 
     try {
       const response = await fetch(url);
@@ -51,13 +31,13 @@ export class NewsService {
         throw new Error(`News API error: ${response.status} ${response.statusText}`);
       }
 
-      const data: NewsResponse = await response.json();
+      const result = await response.json();
       
-      if (data.status !== 'ok') {
-        throw new Error('News API returned an error status');
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch news');
       }
 
-      return data;
+      return result.data;
     } catch (error) {
       console.error('Error fetching news:', error);
       throw new Error('Failed to fetch news. Please try again later.');
