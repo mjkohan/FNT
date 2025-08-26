@@ -8,12 +8,14 @@ import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import NewsSection from "@/components/NewsSection";
+import OrderBook from "@/components/OrderBook";
+import FearGreedIndex from "@/components/FearGreedIndex";
 
-async function fetchCrypto() {
+const fetchCrypto = async () => {
   const res = await fetch("/api/crypto", { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch crypto data");
   return res.json();
-}
+};
 
 interface CryptoData {
   id: string;
@@ -285,6 +287,15 @@ export default function CryptoDetailPage() {
 
         {/* News Section */}
         <NewsSection coinName={coin.name} coinSymbol={coin.symbol} />
+      </div>
+
+      {/* Additional Market Data Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        {/* Order Book */}
+        <OrderBook symbol={coin.name} />
+        
+        {/* Fear & Greed Index */}
+        <FearGreedIndex />
       </div>
     </div>
   );
