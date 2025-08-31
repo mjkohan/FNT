@@ -9,9 +9,10 @@ import { useState, useEffect } from "react";
 interface NewsSectionProps {
   coinName: string;
   coinSymbol: string;
+  onNewsUpdate?: (news: any[]) => void;
 }
 
-export default function NewsSection({ coinName, coinSymbol }: NewsSectionProps) {
+export default function NewsSection({ coinName, coinSymbol,onNewsUpdate }: NewsSectionProps) {
   const [page, setPage] = useState(1);
   const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
   const [hasMore, setHasMore] = useState(true);
@@ -34,8 +35,13 @@ export default function NewsSection({ coinName, coinSymbol }: NewsSectionProps) 
         setAllArticles(prev => [...prev, ...newsData.articles]);
       }
       setHasMore(newsData.articles.length === 10); // Assuming 10 articles per page
+      
+      // Notify parent component about news updates
+      if (onNewsUpdate) {
+        onNewsUpdate(newsData.articles);
+      }
     }
-  }, [newsData, page]);
+  }, [newsData, page, onNewsUpdate]);
 
   const handleLoadMore = async () => {
     if (hasMore && !isLoadingMore) {

@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
 import TradingViewChart from "@/components/TradingViewChart";
 import NewsSection from "@/components/NewsSection";
@@ -24,13 +25,25 @@ import {
   ArrowLeft,
   ChartLine,
   Newspaper,
-  Play
+  Play,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Activity
 } from "lucide-react";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 
 const fetchCrypto = async () => {
   const res = await fetch("/api/crypto", { cache: "no-store" });
   if (!res.ok) throw new Error("Failed to fetch crypto data");
+  return res.json();
+};
+
+const fetchChartData = async (symbol: string, interval: string) => {
+  const res = await fetch(`/api/crypto/chart-data?symbol=${symbol}&interval=${interval}`);
+  if (!res.ok) throw new Error("Failed to fetch chart data");
   return res.json();
 };
 
@@ -55,6 +68,27 @@ interface CryptoData {
   max_supply: number;
 }
 
+
+
+interface AIAnalysisResult {
+  summary: string;
+  sentiment: string;
+  position: string;
+  confidence: string;
+  keyFactors: string[];
+}
+
+const INTERVALS = [
+  { value: '1m', label: '1 Minute', description: 'Ultra short-term' },
+  { value: '5m', label: '5 Minutes', description: 'Very short-term' },
+  { value: '15m', label: '15 Minutes', description: 'Short-term' },
+  { value: '30m', label: '30 Minutes', description: 'Short-term' },
+  { value: '1h', label: '1 Hour', description: 'Medium-term' },
+  { value: '4h', label: '4 Hours', description: 'Medium-term' },
+  { value: '1d', label: '1 Day', description: 'Long-term' },
+  { value: '1w', label: '1 Week', description: 'Very long-term' }
+];
+
 export default function CryptoAnalyticsPage() {
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, error } = useQuery({
@@ -64,18 +98,26 @@ export default function CryptoAnalyticsPage() {
   
   const coin = data?.find((c: CryptoData) => c.id === id);
 
-  if (isLoading) return (
-    <div className="text-center py-12 text-muted-foreground text-lg">
-      Loading...
-    </div>
-  );
-  
-  if (error || !coin) return (
-    <div className="text-center py-12 text-destructive text-lg">
-      Coin not found
-    </div>
-  );
+  // State management
+  const [selectedInterval, setSelectedInterval] = useState('1h');
+  const [selectedAIModel, setSelectedAIModel] = useState("chatgpt");
+  const [analysisTypes, setAnalysisTypes] = useState({
+    news: true,
+    chart: true
+  });
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [newsData, setNewsData] = useState<any[]>([]);
 
+  // Fetch chart data based on selected interval
+  const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
+    queryKey: ["chartData", coin?.symbol, selectedInterval],
+    queryFn: () => fetchChartData(coin?.symbol || 'BTCUSDT', selectedInterval),
+    enabled: !!coin?.symbol,
+    refetchInterval: selectedInterval === '1m' ? 30000 : 60000, // Refresh every 30s for 1m, 1min for others
+  });
+  
   // Helper function to format numbers
   const formatNumber = (num: number, decimals: number = 2) => {
     if (num >= 1e9) return `$${(num / 1e9).toFixed(decimals)}B`;
@@ -109,6 +151,98 @@ export default function CryptoAnalyticsPage() {
       };
     }
   };
+
+  // Handle AI Analysis
+  const handleStartAnalysis = async () => {
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    setAnalysisResult(null);
+
+    try {
+      // Prepare analysis data with chart data and news
+      const analysisData = {
+        aiModel: selectedAIModel === "chatgpt" ? "ChatGPT" : 
+                 selectedAIModel === "gemini" ? "Gemini" : "Claude",
+        analysisTypes: Object.keys(analysisTypes).filter(key => analysisTypes[key as keyof typeof analysisTypes]),
+        chartData,
+        newsData: {
+          coinName: coin?.name,
+          symbol: coin?.symbol,
+          timestamp: new Date().toISOString(),
+          recentNews: newsData
+        }
+      };
+
+      const response = await fetch('/api/ai-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(analysisData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI analysis');
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Try to parse the AI response as JSON
+      try {
+        const parsedResult = JSON.parse(data.analysis);
+        setAnalysisResult(parsedResult);
+      } catch (parseError) {
+        // If parsing fails, create a structured result from the raw text
+        setAnalysisResult({
+          summary: data.analysis,
+          sentiment: "neutral",
+          position: "hold",
+          confidence: "medium",
+          keyFactors: ["Analysis completed successfully"]
+        });
+      }
+    } catch (error) {
+      setAnalysisError(error instanceof Error ? error.message : 'Analysis failed');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Handle checkbox changes
+  const handleCheckboxChange = (type: 'news' | 'chart') => {
+    setAnalysisTypes(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
+
+  // Get sentiment icon and color
+  const getSentimentDisplay = (sentiment: string) => {
+    switch (sentiment.toLowerCase()) {
+      case 'bullish':
+        return { icon: <TrendingUp className="w-4 h-4" />, color: 'text-green-600' };
+      case 'bearish':
+        return { icon: <TrendingDown className="w-4 h-4" />, color: 'text-red-600' };
+      default:
+        return { icon: <Minus className="w-4 h-4" />, color: 'text-yellow-600' };
+    }
+  };
+
+  if (isLoading) return (
+    <div className="text-center py-12 text-muted-foreground text-lg">
+      Loading...
+    </div>
+  );
+  
+  if (error || !coin) return (
+    <div className="text-center py-12 text-destructive text-lg">
+      Coin not found
+    </div>
+  );
 
   const priceChangeDisplay = getPriceChangeDisplay(coin.price_change_percentage_24h);
 
@@ -145,9 +279,13 @@ export default function CryptoAnalyticsPage() {
                 <h1 className="text-4xl font-bold text-foreground uppercase tracking-wide">
                   {coin.symbol}
                 </h1>
-                
+                <Badge variant="secondary" className="text-sm px-3 py-1">
+                  #{coin.market_cap_rank}
+                </Badge>
               </div>
-              
+              <span className="text-2xl text-muted-foreground font-medium">
+                {coin.name} Analytics
+              </span>
               <div className="flex items-center gap-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-foreground">
@@ -162,7 +300,7 @@ export default function CryptoAnalyticsPage() {
                   </div>
                 </div>
                 <Separator orientation="vertical" className="h-12" />
-                {/* <div className="text-center">
+                <div className="text-center">
                   <div className="text-sm text-muted-foreground">Market Cap</div>
                   <div className="text-lg font-semibold text-foreground">
                     {formatNumber(coin.market_cap)}
@@ -174,7 +312,7 @@ export default function CryptoAnalyticsPage() {
                   <div className="text-lg font-semibold text-foreground">
                     {formatNumber(coin.total_volume)}
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
           </div>
@@ -193,21 +331,36 @@ export default function CryptoAnalyticsPage() {
         </div>
       </Card>
 
+      
+
       {/* Chart and News Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* TradingView Chart */}
         <Card className="p-0 overflow-hidden">
           <CardHeader className="pb-3 px-6 pt-6">
-            <CardTitle className="text-lg text-foreground flex items-center gap-2">
-              <ChartLine className="w-5 h-5" />
-              Price Chart
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg text-foreground flex items-center gap-2">
+                <ChartLine className="w-5 h-5" />
+                Price Chart 
+              </CardTitle>
+              
+            </div>
           </CardHeader>
-          <TradingViewChart symbol={coin.name} />
+          
+            <TradingViewChart symbol={coin.name} />
+          
         </Card>
 
         {/* News Section */}
-        <NewsSection coinName={coin.name} coinSymbol={coin.symbol} />
+        <div className="space-y-4">
+          <NewsSection 
+            coinName={coin.name} 
+            coinSymbol={coin.symbol}
+            onNewsUpdate={setNewsData}
+          />
+          
+          
+        </div>
       </div>
 
       {/* AI Analysis Section */}
@@ -222,7 +375,7 @@ export default function CryptoAnalyticsPage() {
             </CardTitle>
           </div>
           <p className="text-muted-foreground text-lg">
-            Get intelligent insights from multiple AI models for {coin.name} analysis
+            Get intelligent insights from multiple AI models for {coin.name} analysis using {selectedInterval} chart data
           </p>
         </CardHeader>
         
@@ -230,7 +383,11 @@ export default function CryptoAnalyticsPage() {
           {/* AI Model Selection */}
           <div className="space-y-4">
             <div className="text-lg font-semibold text-foreground mb-3">Select AI Model</div>
-            <RadioGroup defaultValue="chatgpt" className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <RadioGroup 
+              value={selectedAIModel} 
+              onValueChange={setSelectedAIModel}
+              className="grid grid-cols-1 md:grid-cols-3 gap-4"
+            >
               <div className="flex justify-center items-center space-x-2">
                 <RadioGroupItem value="chatgpt" id="chatgpt" />
                 <Label htmlFor="chatgpt" className="flex items-center gap-2 cursor-pointer">
@@ -263,47 +420,211 @@ export default function CryptoAnalyticsPage() {
             </RadioGroup>
           </div>
 
-          {/* Analysis Type Selection */}
-          <div className="space-y-4">
-            <div className="text-lg font-semibold text-foreground mb-3">Analysis Type</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex justify-center items-center space-x-2">
-                <Checkbox id="news-analysis" defaultChecked />
-                <Label htmlFor="news-analysis" className="flex items-center gap-2 cursor-pointer">
-                  <Newspaper className="w-4 h-4 text-blue-500" />
-                  <span className="font-medium">News Analysis</span>
-                  <span className="text-sm text-muted-foreground">(Sentiment & Impact)</span>
-                </Label>
-              </div>
-              
-              <div className="flex justify-center items-center space-x-2">
-                <Checkbox id="chart-analysis" defaultChecked />
-                <Label htmlFor="chart-analysis" className="flex items-center gap-2 cursor-pointer">
-                  <ChartLine className="w-4 h-4 text-green-500" />
-                  <span className="font-medium">Chart Analysis</span>
-                  <span className="text-sm text-muted-foreground">(Technical & Patterns)</span>
-                </Label>
-              </div>
-            </div>
-          </div>
+                     {/* Analysis Type Selection */}
+           <div className="space-y-4">
+             <div className="text-lg font-semibold text-foreground mb-3">Analysis Type</div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="flex justify-center items-center space-x-2">
+                 <Checkbox 
+                   id="news-analysis" 
+                   checked={analysisTypes.news}
+                   onCheckedChange={() => handleCheckboxChange('news')}
+                 />
+                 <Label htmlFor="news-analysis" className="flex items-center gap-2 cursor-pointer">
+                   <Newspaper className="w-4 h-4 text-blue-500" />
+                   <span className="font-medium">News Analysis</span>
+                   <span className="text-sm text-muted-foreground">(Sentiment & Impact)</span>
+                 </Label>
+               </div>
+               
+               <div className="flex justify-center items-center space-x-2">
+                 <Checkbox 
+                   id="chart-analysis" 
+                   checked={analysisTypes.chart}
+                   onCheckedChange={() => handleCheckboxChange('chart')}
+                 />
+                 <Label htmlFor="chart-analysis" className="flex items-center gap-2 cursor-pointer">
+                   <ChartLine className="w-4 h-4 text-green-500" />
+                   <span className="font-medium">Chart Analysis</span>
+                   <span className="text-sm text-muted-foreground">(Technical & Patterns)</span>
+                 </Label>
+               </div>
+             </div>
+           </div>
 
-    
+           {/* AI Analysis Timeframe Selector */}
+           <div className="space-y-3">
+             <div className="text-lg font-semibold text-foreground">Analysis Timeframe</div>
+             <div className="flex items-center gap-3">
+               <Label htmlFor="ai-timeframe" className="text-sm text-muted-foreground whitespace-nowrap">
+                 Timeframe:
+               </Label>
+               <Select value={selectedInterval} onValueChange={setSelectedInterval}>
+                 <SelectTrigger id="ai-timeframe" className="w-48">
+                   <SelectValue placeholder="Select timeframe" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {INTERVALS.map((interval) => (
+                     <SelectItem key={interval.value} value={interval.value}>
+                       <div className="flex flex-col">
+                         <span className="font-medium">{interval.label}</span>
+                         {/* <span className="text-xs text-muted-foreground">{interval.description}</span> */}
+                       </div>
+                     </SelectItem>
+                   ))}
+                 </SelectContent>
+               </Select>
+               <div className="text-xs text-muted-foreground">
+                 AI will analyze {selectedInterval} data
+               </div>
+             </div>
+           </div>
+
+          {/* Start Analysis Button */}
           <div className="text-center pt-6">
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+              onClick={handleStartAnalysis}
+              disabled={isAnalyzing || (!analysisTypes.news && !analysisTypes.chart)}
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              <Play className="w-5 h-5 mr-2" />
-              Start AI Analysis
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Play className="w-5 h-5 mr-2" />
+                  Start AI Analysis
+                </>
+              )}
             </Button>
             <p className="text-sm text-muted-foreground mt-3">
-              Analysis will be generated based on current market data and recent news
+              Analysis will be generated based on {selectedInterval} chart data and recent news
             </p>
           </div>
+
+          {/* Analysis Results */}
+          {analysisResult && (
+            <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <div className="flex items-center gap-2 mb-4">
+                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                <h3 className="text-lg font-semibold text-foreground">AI Analysis Results</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Summary</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {analysisResult.summary}
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Sentiment:</span>
+                    <Badge 
+                      variant="outline" 
+                      className={`${getSentimentDisplay(analysisResult.sentiment).color} border-current`}
+                    >
+                      <div className="flex items-center gap-1">
+                        {getSentimentDisplay(analysisResult.sentiment).icon}
+                        {analysisResult.sentiment}
+                      </div>
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Position:</span>
+                    <Badge 
+                      variant="outline" 
+                      className={`${
+                        analysisResult.position === 'long' ? 'text-green-600 border-green-600' :
+                        analysisResult.position === 'short' ? 'text-red-600 border-red-600' :
+                        'text-blue-600 border-blue-600'
+                      }`}
+                    >
+                      {analysisResult.position}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Confidence:</span>
+                    <Badge 
+                      variant="outline" 
+                      className={`${
+                        analysisResult.confidence === 'high' ? 'text-emerald-600 border-emerald-600' :
+                        analysisResult.confidence === 'medium' ? 'text-yellow-600 border-yellow-600' :
+                        'text-orange-600 border-orange-600'
+                      }`}
+                    >
+                      {analysisResult.confidence}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              
+              {analysisResult.keyFactors && analysisResult.keyFactors.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-foreground mb-2">Key Factors</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    {analysisResult.keyFactors.map((factor, index) => (
+                      <li key={index} className="text-sm text-muted-foreground">
+                        {factor}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Analysis Error */}
+          {analysisError && (
+            <div className="mt-8 p-6 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+                <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">Analysis Failed</h3>
+              </div>
+              <p className="text-sm text-red-600 dark:text-red-300">
+                {analysisError}
+              </p>
+              <Button 
+                onClick={handleStartAnalysis}
+                variant="outline"
+                size="sm"
+                className="mt-3 border-red-300 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-     
+      {/* Additional Analytics Features Placeholder */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-6 border-dashed border-2 border-muted-foreground/20">
+          <CardHeader className="text-center pb-3">
+            <CardTitle className="text-lg text-muted-foreground">Coming Soon</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="text-4xl mb-2">📊</div>
+            <p className="text-muted-foreground">Advanced technical indicators and pattern recognition</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="p-6 border-dashed border-2 border-muted-foreground/20">
+          <CardHeader className="text-center pb-3">
+            <CardTitle className="text-lg text-muted-foreground">Coming Soon</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="text-4xl mb-2">🔮</div>
+            <p className="text-muted-foreground">Price prediction models and risk assessment</p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

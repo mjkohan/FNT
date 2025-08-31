@@ -286,7 +286,7 @@ export default function CryptoDetailPage() {
         </Card>
 
         {/* News Section */}
-        <NewsSection coinName={coin.name} coinSymbol={coin.symbol} />
+        <NewsSection  coinSymbol={coin.symbol} coinName={coin.name} />
       </div>
 
       {/* Additional Market Data Section */}
