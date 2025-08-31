@@ -145,13 +145,9 @@ export default function CryptoAnalyticsPage() {
                 <h1 className="text-4xl font-bold text-foreground uppercase tracking-wide">
                   {coin.symbol}
                 </h1>
-                <Badge variant="secondary" className="text-sm px-3 py-1">
-                  #{coin.market_cap_rank}
-                </Badge>
+                
               </div>
-              <span className="text-2xl text-muted-foreground font-medium">
-                {coin.name} Analytics
-              </span>
+              
               <div className="flex items-center gap-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-foreground">
@@ -235,7 +231,7 @@ export default function CryptoAnalyticsPage() {
           <div className="space-y-4">
             <div className="text-lg font-semibold text-foreground mb-3">Select AI Model</div>
             <RadioGroup defaultValue="chatgpt" className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex justify-center items-center space-x-2">
                 <RadioGroupItem value="chatgpt" id="chatgpt" />
                 <Label htmlFor="chatgpt" className="flex items-center gap-2 cursor-pointer">
                   <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full p-2">
@@ -245,7 +241,7 @@ export default function CryptoAnalyticsPage() {
                 </Label>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex justify-center items-center space-x-2">
                 <RadioGroupItem value="gemini" id="gemini" />
                 <Label htmlFor="gemini" className="flex items-center gap-2 cursor-pointer">
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
@@ -255,7 +251,7 @@ export default function CryptoAnalyticsPage() {
                 </Label>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex justify-center items-center space-x-2">
                 <RadioGroupItem value="claude" id="claude" />
                 <Label htmlFor="claude" className="flex items-center gap-2 cursor-pointer">
                   <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-full p-2">
@@ -271,7 +267,7 @@ export default function CryptoAnalyticsPage() {
           <div className="space-y-4">
             <div className="text-lg font-semibold text-foreground mb-3">Analysis Type</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex justify-center items-center space-x-2">
                 <Checkbox id="news-analysis" defaultChecked />
                 <Label htmlFor="news-analysis" className="flex items-center gap-2 cursor-pointer">
                   <Newspaper className="w-4 h-4 text-blue-500" />
@@ -280,7 +276,7 @@ export default function CryptoAnalyticsPage() {
                 </Label>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex justify-center items-center space-x-2">
                 <Checkbox id="chart-analysis" defaultChecked />
                 <Label htmlFor="chart-analysis" className="flex items-center gap-2 cursor-pointer">
                   <ChartLine className="w-4 h-4 text-green-500" />
@@ -291,43 +287,7 @@ export default function CryptoAnalyticsPage() {
             </div>
           </div>
 
-          {/* Analysis Parameters */}
-          <div className="space-y-4">
-            <div className="text-lg font-semibold text-foreground mb-3">Analysis Parameters</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Timeframe</Label>
-                <select className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-background text-foreground">
-                  <option>Last 24 hours</option>
-                  <option>Last 7 days</option>
-                  <option>Last 30 days</option>
-                  <option>Last 3 months</option>
-                  <option>Last year</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Analysis Depth</Label>
-                <select className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-background text-foreground">
-                  <option>Quick Overview</option>
-                  <option>Detailed Analysis</option>
-                  <option>Comprehensive Report</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Focus Area</Label>
-                <select className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-background text-foreground">
-                  <option>General Market</option>
-                  <option>Technical Indicators</option>
-                  <option>Fundamental Analysis</option>
-                  <option>Risk Assessment</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Start Analysis Button */}
+    
           <div className="text-center pt-6">
             <Button 
               size="lg" 
@@ -343,28 +303,7 @@ export default function CryptoAnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* Additional Analytics Features Placeholder */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 border-dashed border-2 border-muted-foreground/20">
-          <CardHeader className="text-center pb-3">
-            <CardTitle className="text-lg text-muted-foreground">Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-4xl mb-2">📊</div>
-            <p className="text-muted-foreground">Advanced technical indicators and pattern recognition</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="p-6 border-dashed border-2 border-muted-foreground/20">
-          <CardHeader className="text-center pb-3">
-            <CardTitle className="text-lg text-muted-foreground">Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-4xl mb-2">🔮</div>
-            <p className="text-muted-foreground">Price prediction models and risk assessment</p>
-          </CardContent>
-        </Card>
-      </div>
+     
     </div>
   );
 }

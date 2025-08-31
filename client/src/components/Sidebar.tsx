@@ -62,31 +62,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Crypto",
           url: "/dashboard/crypto",
           icon: Bitcoin,
-          isActive: pathname === "/dashboard/crypto"
+          isActive: pathname.includes("/dashboard/crypto")
         },
         {
           title: "Indices",
           url: "/dashboard/indices",
           icon: BarChart2,
-          isActive: pathname === "/dashboard/indices"
+          isActive: pathname.includes("/dashboard/indices")
         },
         {
           title: "Stocks",
           url: "/dashboard/stocks",
           icon: Building2,
-          isActive: pathname === "/dashboard/stocks"
+          isActive: pathname.includes("/dashboard/stocks")
         },
         {
           title: "Futures",
           url: "/dashboard/futures",
           icon: TrendingUp,
-          isActive: pathname === "/dashboard/futures"
+          isActive: pathname.includes("/dashboard/futures")
         },
         {
           title: "Forex",
           url: "/dashboard/forex",
           icon: DollarSign,
-          isActive: pathname === "/dashboard/forex"
+          isActive: pathname.includes("/dashboard/forex")
         }
       ]
     },
@@ -97,13 +97,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           title: "Profile",
           url: "/dashboard/profile",
           icon: User,
-          isActive: pathname === "/dashboard/profile"
+          isActive: pathname.includes("/dashboard/profile")
         },
         {
           title: "Settings",
           url: "/dashboard/settings",
           icon: Settings,
-          isActive: pathname === "/dashboard/settings"
+          isActive: pathname.includes("/dashboard/settings")
         }
       ]
     }
