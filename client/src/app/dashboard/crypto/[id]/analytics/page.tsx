@@ -243,7 +243,7 @@ export default function CryptoAnalyticsPage() {
       Coin not found
     </div>
   );
-
+  console.log(newsData)
   const priceChangeDisplay = getPriceChangeDisplay(coin.price_change_percentage_24h);
 
   return (

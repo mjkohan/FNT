@@ -6,7 +6,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const symbol = searchParams.get('symbol') || 'BTCUSDT';
     const interval = searchParams.get('interval') || '15m';
-    const limit = searchParams.get('limit') || '100';
+    //const limit = searchParams.get('limit') || '100';
+    const limit =  '1';
 
     // Validate interval parameter (Binance supported intervals)
     const validIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
 
     // Fetch data from Binance API
     const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}USDT&interval=${interval}&limit=${limitNum}`;
-    
+    console.log(binanceUrl)
     const response = await fetch(binanceUrl, {
       headers: {
         'Content-Type': 'application/json',
@@ -56,12 +57,12 @@ export async function GET(request: Request) {
       high: parseFloat(candle[2]),
       low: parseFloat(candle[3]),
       close: parseFloat(candle[4]),
-      volume: parseFloat(candle[5]),
-      closeTime: candle[6], // Close time (ms since Unix epoch)
-      quoteVolume: parseFloat(candle[7]), // Quote asset volume
-      trades: parseInt(candle[8]), // Number of trades
-      takerBuyBaseVolume: parseFloat(candle[9]), // Taker buy base asset volume
-      takerBuyQuoteVolume: parseFloat(candle[10]) // Taker buy quote asset volume
+      //volume: parseFloat(candle[5]),
+      //closeTime: candle[6], // Close time (ms since Unix epoch)
+      //quoteVolume: parseFloat(candle[7]), // Quote asset volume
+      //trades: parseInt(candle[8]), // Number of trades
+      //takerBuyBaseVolume: parseFloat(candle[9]), // Taker buy base asset volume
+      //takerBuyQuoteVolume: parseFloat(candle[10]) // Taker buy quote asset volume
     }));
 
     const latestPrice = candles.length > 0 ? candles[candles.length - 1]?.close : null;

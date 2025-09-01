@@ -24,13 +24,27 @@ Return response in JSON:
     `;
 
     let result;
-
+    console.log(process.env.OPENAI_API_KEY)
     // --- ChatGPT (OpenAI) ---
     if (aiModel === "ChatGPT") {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }]
+      // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      // const response = await openai.chat.completions.create({
+      //   model: "gpt-5-nano",
+      //   messages: [{ role: "user", content: prompt }]
+      // });
+      const client = new OpenAI({
+        apiKey: process.env.AVALAI_API_KEY,
+        baseURL: "https://api.avalai.ir/v1",
+      });
+      
+      const response = await client.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
       });
       result = response.choices[0].message?.content;
     }
@@ -38,7 +52,7 @@ Return response in JSON:
     // --- Gemini (Google) ---
     if (aiModel === "Gemini") {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
       const response = await model.generateContent(prompt);
       result = response.response.text();
     }
