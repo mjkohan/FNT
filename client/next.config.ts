@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/coins/images/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'static2.finnhub.io',
+        port: '',
+        pathname: '/file/publicdatany/finnhubimage/stock_logo/**',
+      },
     ],
   },
 };

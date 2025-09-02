@@ -18,7 +18,6 @@ function DashboardTabs() {
   const router = useRouter();
   const tabs = [
     { value: "crypto", label: "Crypto", icon: Bitcoin },
-    { value: "indices", label: "Indices", icon: BarChart2 },
     { value: "stocks", label: "Stocks", icon: Building2 },
     { value: "futures", label: "Futures", icon: TrendingUp },
     { value: "forex", label: "Forex", icon: DollarSign },
@@ -26,7 +25,7 @@ function DashboardTabs() {
   const current = pathname.split("/")[2] || "crypto";
   return (
     <Tabs value={current} className="w-full max-w-4xl mx-auto mt-4">
-      <TabsList className="w-full grid grid-cols-5 gap-2 bg-muted/60 rounded-2xl p-1 shadow-none">
+      <TabsList className="w-full grid grid-cols-4 gap-2 bg-muted/60 rounded-2xl p-1 shadow-none">
         {tabs.map(tab => {
           const Icon = tab.icon;
           return (

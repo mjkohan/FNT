@@ -65,12 +65,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           isActive: pathname.includes("/dashboard/crypto")
         },
         {
-          title: "Indices",
-          url: "/dashboard/indices",
-          icon: BarChart2,
-          isActive: pathname.includes("/dashboard/indices")
-        },
-        {
           title: "Stocks",
           url: "/dashboard/stocks",
           icon: Building2,
