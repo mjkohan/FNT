@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const symbol = searchParams.get('symbol') || 'BTCUSDT';
     const interval = searchParams.get('interval') || '15m';
     //const limit = searchParams.get('limit') || '100';
-    const limit =  '1';
+    const limit =  '5';
 
     // Validate interval parameter (Binance supported intervals)
     const validIntervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];

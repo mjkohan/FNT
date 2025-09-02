@@ -30,7 +30,9 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
-  Activity
+  Activity,
+  RotateCcw,
+  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -75,7 +77,6 @@ interface AIAnalysisResult {
   sentiment: string;
   position: string;
   confidence: string;
-  keyFactors: string[];
 }
 
 const INTERVALS = [
@@ -109,6 +110,7 @@ export default function CryptoAnalyticsPage() {
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [newsData, setNewsData] = useState<any[]>([]);
+  const [showAnalysisForm, setShowAnalysisForm] = useState(true);
 
   // Fetch chart data based on selected interval
   const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
@@ -165,6 +167,7 @@ export default function CryptoAnalyticsPage() {
                  selectedAIModel === "gemini" ? "Gemini" : "Claude",
         analysisTypes: Object.keys(analysisTypes).filter(key => analysisTypes[key as keyof typeof analysisTypes]),
         chartData,
+        symbol: coin?.symbol,
         newsData: {
           coinName: coin?.name,
           symbol: coin?.symbol,
@@ -186,30 +189,23 @@ export default function CryptoAnalyticsPage() {
       }
 
       const data = await response.json();
+      console.log(data)
       
-      if (data.error) {
-        throw new Error(data.error);
-      }
 
-      // Try to parse the AI response as JSON
-      try {
-        const parsedResult = JSON.parse(data.analysis);
-        setAnalysisResult(parsedResult);
-      } catch (parseError) {
-        // If parsing fails, create a structured result from the raw text
-        setAnalysisResult({
-          summary: data.analysis,
-          sentiment: "neutral",
-          position: "hold",
-          confidence: "medium",
-          keyFactors: ["Analysis completed successfully"]
-        });
-      }
+      setAnalysisResult(data.analysis);
+      setShowAnalysisForm(false); // Hide form after successful analysis
     } catch (error) {
       setAnalysisError(error instanceof Error ? error.message : 'Analysis failed');
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Handle regenerate analysis
+  const handleRegenerateAnalysis = () => {
+    setShowAnalysisForm(true);
+    setAnalysisResult(null);
+    setAnalysisError(null);
   };
 
   // Handle checkbox changes
@@ -243,7 +239,6 @@ export default function CryptoAnalyticsPage() {
       Coin not found
     </div>
   );
-  console.log(newsData)
   const priceChangeDisplay = getPriceChangeDisplay(coin.price_change_percentage_24h);
 
   return (
@@ -279,13 +274,9 @@ export default function CryptoAnalyticsPage() {
                 <h1 className="text-4xl font-bold text-foreground uppercase tracking-wide">
                   {coin.symbol}
                 </h1>
-                <Badge variant="secondary" className="text-sm px-3 py-1">
-                  #{coin.market_cap_rank}
-                </Badge>
+              
               </div>
-              <span className="text-2xl text-muted-foreground font-medium">
-                {coin.name} Analytics
-              </span>
+              
               <div className="flex items-center gap-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-foreground">
@@ -375,256 +366,277 @@ export default function CryptoAnalyticsPage() {
             </CardTitle>
           </div>
           <p className="text-muted-foreground text-lg">
-            Get intelligent insights from multiple AI models for {coin.name} analysis using {selectedInterval} chart data
+            {showAnalysisForm 
+              ? `Get intelligent insights from multiple AI models for ${coin.name} analysis using ${selectedInterval} chart data`
+              : `AI analysis completed for ${coin.name} using ${selectedInterval} data`
+            }
           </p>
         </CardHeader>
         
         <CardContent className="space-y-8">
-          {/* AI Model Selection */}
-          <div className="space-y-4">
-            <div className="text-lg font-semibold text-foreground mb-3">Select AI Model</div>
-            <RadioGroup 
-              value={selectedAIModel} 
-              onValueChange={setSelectedAIModel}
-              className="grid grid-cols-1 md:grid-cols-3 gap-4"
-            >
-              <div className="flex justify-center items-center space-x-2">
-                <RadioGroupItem value="chatgpt" id="chatgpt" />
-                <Label htmlFor="chatgpt" className="flex items-center gap-2 cursor-pointer">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full p-2">
-                    <Bot className="w-4 h-4 text-white" />
+          {/* Show Analysis Form */}
+          {showAnalysisForm && (
+            <div className="space-y-8 animate-in slide-in-from-top-4 duration-500">
+              {/* AI Model Selection */}
+              <div className="space-y-4">
+                <div className="text-lg font-semibold text-foreground mb-3">Select AI Model</div>
+                <RadioGroup 
+                  value={selectedAIModel} 
+                  onValueChange={setSelectedAIModel}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                >
+                  <div className="flex justify-center items-center space-x-2">
+                    <RadioGroupItem value="chatgpt" id="chatgpt" />
+                    <Label htmlFor="chatgpt" className="flex items-center gap-2 cursor-pointer">
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-full p-2">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-medium">ChatGPT</span>
+                    </Label>
                   </div>
-                  <span className="font-medium">ChatGPT</span>
-                </Label>
-              </div>
-              
-              <div className="flex justify-center items-center space-x-2">
-                <RadioGroupItem value="gemini" id="gemini" />
-                <Label htmlFor="gemini" className="flex items-center gap-2 cursor-pointer">
-                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
-                    <Sparkles className="w-4 h-4 text-white" />
+                  
+                  <div className="flex justify-center items-center space-x-2">
+                    <RadioGroupItem value="gemini" id="gemini" />
+                    <Label htmlFor="gemini" className="flex items-center gap-2 cursor-pointer">
+                      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full p-2">
+                        <Sparkles className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-medium">Gemini</span>
+                    </Label>
                   </div>
-                  <span className="font-medium">Gemini</span>
-                </Label>
-              </div>
-              
-              <div className="flex justify-center items-center space-x-2">
-                <RadioGroupItem value="claude" id="claude" />
-                <Label htmlFor="claude" className="flex items-center gap-2 cursor-pointer">
-                  <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-full p-2">
-                    <Zap className="w-4 h-4 text-white" />
+                  
+                  <div className="flex justify-center items-center space-x-2">
+                    <RadioGroupItem value="claude" id="claude" />
+                    <Label htmlFor="claude" className="flex items-center gap-2 cursor-pointer">
+                      <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-full p-2">
+                        <Zap className="w-4 h-4 text-white" />
+                      </div>
+                      <span className="font-medium">XAi(Grok)</span>
+                    </Label>
                   </div>
-                  <span className="font-medium">Claude</span>
-                </Label>
+                </RadioGroup>
               </div>
-            </RadioGroup>
-          </div>
 
-                     {/* Analysis Type Selection */}
-           <div className="space-y-4">
-             <div className="text-lg font-semibold text-foreground mb-3">Analysis Type</div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div className="flex justify-center items-center space-x-2">
-                 <Checkbox 
-                   id="news-analysis" 
-                   checked={analysisTypes.news}
-                   onCheckedChange={() => handleCheckboxChange('news')}
-                 />
-                 <Label htmlFor="news-analysis" className="flex items-center gap-2 cursor-pointer">
-                   <Newspaper className="w-4 h-4 text-blue-500" />
-                   <span className="font-medium">News Analysis</span>
-                   <span className="text-sm text-muted-foreground">(Sentiment & Impact)</span>
-                 </Label>
-               </div>
-               
-               <div className="flex justify-center items-center space-x-2">
-                 <Checkbox 
-                   id="chart-analysis" 
-                   checked={analysisTypes.chart}
-                   onCheckedChange={() => handleCheckboxChange('chart')}
-                 />
-                 <Label htmlFor="chart-analysis" className="flex items-center gap-2 cursor-pointer">
-                   <ChartLine className="w-4 h-4 text-green-500" />
-                   <span className="font-medium">Chart Analysis</span>
-                   <span className="text-sm text-muted-foreground">(Technical & Patterns)</span>
-                 </Label>
-               </div>
-             </div>
-           </div>
-
-           {/* AI Analysis Timeframe Selector */}
-           <div className="space-y-3">
-             <div className="text-lg font-semibold text-foreground">Analysis Timeframe</div>
-             <div className="flex items-center gap-3">
-               <Label htmlFor="ai-timeframe" className="text-sm text-muted-foreground whitespace-nowrap">
-                 Timeframe:
-               </Label>
-               <Select value={selectedInterval} onValueChange={setSelectedInterval}>
-                 <SelectTrigger id="ai-timeframe" className="w-48">
-                   <SelectValue placeholder="Select timeframe" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {INTERVALS.map((interval) => (
-                     <SelectItem key={interval.value} value={interval.value}>
-                       <div className="flex flex-col">
-                         <span className="font-medium">{interval.label}</span>
-                         {/* <span className="text-xs text-muted-foreground">{interval.description}</span> */}
-                       </div>
-                     </SelectItem>
-                   ))}
-                 </SelectContent>
-               </Select>
-               <div className="text-xs text-muted-foreground">
-                 AI will analyze {selectedInterval} data
-               </div>
-             </div>
-           </div>
-
-          {/* Start Analysis Button */}
-          <div className="text-center pt-6">
-            <Button 
-              size="lg" 
-              onClick={handleStartAnalysis}
-              disabled={isAnalyzing || (!analysisTypes.news && !analysisTypes.chart)}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Play className="w-5 h-5 mr-2" />
-                  Start AI Analysis
-                </>
-              )}
-            </Button>
-            <p className="text-sm text-muted-foreground mt-3">
-              Analysis will be generated based on {selectedInterval} chart data and recent news
-            </p>
-          </div>
-
-          {/* Analysis Results */}
-          {analysisResult && (
-            <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800">
-              <div className="flex items-center gap-2 mb-4">
-                <CheckCircle className="w-5 h-5 text-emerald-500" />
-                <h3 className="text-lg font-semibold text-foreground">AI Analysis Results</h3>
+              {/* Analysis Type Selection */}
+              <div className="space-y-4">
+                <div className="text-lg font-semibold text-foreground mb-3">Analysis Type</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex justify-center items-center space-x-2">
+                    <Checkbox 
+                      id="news-analysis" 
+                      checked={analysisTypes.news}
+                      onCheckedChange={() => handleCheckboxChange('news')}
+                    />
+                    <Label htmlFor="news-analysis" className="flex items-center gap-2 cursor-pointer">
+                      <Newspaper className="w-4 h-4 text-blue-500" />
+                      <span className="font-medium">News Analysis</span>
+                      <span className="text-sm text-muted-foreground">(Sentiment & Impact)</span>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex justify-center items-center space-x-2">
+                    <Checkbox 
+                      id="chart-analysis" 
+                      checked={analysisTypes.chart}
+                      onCheckedChange={() => handleCheckboxChange('chart')}
+                    />
+                    <Label htmlFor="chart-analysis" className="flex items-center gap-2 cursor-pointer">
+                      <ChartLine className="w-4 h-4 text-green-500" />
+                      <span className="font-medium">Chart Analysis</span>
+                      <span className="text-sm text-muted-foreground">(Technical & Patterns)</span>
+                    </Label>
+                  </div>
+                </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-foreground mb-2">Summary</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {analysisResult.summary}
-                  </p>
+
+              {/* AI Analysis Timeframe Selector */}
+              <div className="space-y-3">
+                <div className="text-lg font-semibold text-foreground">Analysis Timeframe</div>
+                <div className="flex items-center gap-3">
+                  <Label htmlFor="ai-timeframe" className="text-sm text-muted-foreground whitespace-nowrap">
+                    Timeframe:
+                  </Label>
+                  <Select value={selectedInterval} onValueChange={setSelectedInterval}>
+                    <SelectTrigger id="ai-timeframe" className="w-48">
+                      <SelectValue placeholder="Select timeframe" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {INTERVALS.map((interval) => (
+                        <SelectItem key={interval.value} value={interval.value}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{interval.label}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <div className="text-xs text-muted-foreground">
+                    AI will analyze {selectedInterval} data
+                  </div>
+                </div>
+              </div>
+
+              {/* Start Analysis Button */}
+              <div className="text-center pt-6">
+                <Button 
+                  size="lg" 
+                  onClick={handleStartAnalysis}
+                  disabled={isAnalyzing || (!analysisTypes.news && !analysisTypes.chart)}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 mr-2" />
+                      Start AI Analysis
+                    </>
+                  )}
+                </Button>
+                <p className="text-sm text-muted-foreground mt-3">
+                  Analysis will be generated based on {selectedInterval} chart data and recent news
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Show Analysis Results */}
+          {analysisResult && !showAnalysisForm && (
+            <div className="animate-in slide-in-from-bottom-4 duration-500">
+              <div className="p-6 bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-800 shadow-lg">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full p-2">
+                      <CheckCircle className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-foreground">AI Analysis Results</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Generated using {selectedAIModel === "chatgpt" ? "ChatGPT" : 
+                                       selectedAIModel === "gemini" ? "Gemini" : "XAi(Grok)"} • {selectedInterval} timeframe
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={handleRegenerateAnalysis}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-emerald-300 text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900/20"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Regenerate
+                  </Button>
                 </div>
                 
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Sentiment:</span>
-                    <Badge 
-                      variant="outline" 
-                      className={`${getSentimentDisplay(analysisResult.sentiment).color} border-current`}
-                    >
-                      <div className="flex items-center gap-1">
-                        {getSentimentDisplay(analysisResult.sentiment).icon}
-                        {analysisResult.sentiment}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Summary Section */}
+                  <div className="lg:col-span-2">
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 rounded-lg p-4 border border-emerald-200 dark:border-emerald-800">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Brain className="w-4 h-4 text-emerald-600" />
+                        Analysis Summary
+                      </h4>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {analysisResult.summary}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Metrics Section */}
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-blue-600" />
+                        Market Sentiment
+                      </h4>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Sentiment:</span>
+                        <Badge 
+                          variant="outline" 
+                          className={`${getSentimentDisplay(analysisResult.sentiment).color} border-current font-medium`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {getSentimentDisplay(analysisResult.sentiment).icon}
+                            {analysisResult.sentiment}
+                          </div>
+                        </Badge>
                       </div>
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Position:</span>
-                    <Badge 
-                      variant="outline" 
-                      className={`${
-                        analysisResult.position === 'long' ? 'text-green-600 border-green-600' :
-                        analysisResult.position === 'short' ? 'text-red-600 border-red-600' :
-                        'text-blue-600 border-blue-600'
-                      }`}
-                    >
-                      {analysisResult.position}
-                    </Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Confidence:</span>
-                    <Badge 
-                      variant="outline" 
-                      className={`${
-                        analysisResult.confidence === 'high' ? 'text-emerald-600 border-emerald-600' :
-                        analysisResult.confidence === 'medium' ? 'text-yellow-600 border-yellow-600' :
-                        'text-orange-600 border-orange-600'
-                      }`}
-                    >
-                      {analysisResult.confidence}
-                    </Badge>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4 text-purple-600" />
+                        Trading Position
+                      </h4>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Position:</span>
+                        <Badge 
+                          variant="outline" 
+                          className={`${
+                            analysisResult.position === 'long' ? 'text-green-600 border-green-600' :
+                            analysisResult.position === 'short' ? 'text-red-600 border-red-600' :
+                            'text-blue-600 border-blue-600'
+                          } font-medium`}
+                        >
+                          {analysisResult.position}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+                      <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-orange-600" />
+                        Confidence Level
+                      </h4>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Confidence:</span>
+                        <Badge 
+                          variant="outline" 
+                          className={`${
+                            analysisResult.confidence === 'high' ? 'text-emerald-600 border-emerald-600' :
+                            analysisResult.confidence === 'medium' ? 'text-yellow-600 border-yellow-600' :
+                            'text-orange-600 border-orange-600'
+                          } font-medium`}
+                        >
+                          {analysisResult.confidence}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              {analysisResult.keyFactors && analysisResult.keyFactors.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-medium text-foreground mb-2">Key Factors</h4>
-                  <ul className="list-disc list-inside space-y-1">
-                    {analysisResult.keyFactors.map((factor, index) => (
-                      <li key={index} className="text-sm text-muted-foreground">
-                        {factor}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
 
           {/* Analysis Error */}
           {analysisError && (
-            <div className="mt-8 p-6 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="w-5 h-5 text-red-500" />
-                <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">Analysis Failed</h3>
+            <div className="animate-in slide-in-from-top-4 duration-500">
+              <div className="p-6 bg-red-50 dark:bg-red-950/20 rounded-lg border border-red-200 dark:border-red-800">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                  <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">Analysis Failed</h3>
+                </div>
+                <p className="text-sm text-red-600 dark:text-red-300">
+                  {analysisError}
+                </p>
+                <Button 
+                  onClick={handleStartAnalysis}
+                  variant="outline"
+                  size="sm"
+                  className="mt-3 border-red-300 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
+                >
+                  Try Again
+                </Button>
               </div>
-              <p className="text-sm text-red-600 dark:text-red-300">
-                {analysisError}
-              </p>
-              <Button 
-                onClick={handleStartAnalysis}
-                variant="outline"
-                size="sm"
-                className="mt-3 border-red-300 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/20"
-              >
-                Try Again
-              </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Additional Analytics Features Placeholder */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 border-dashed border-2 border-muted-foreground/20">
-          <CardHeader className="text-center pb-3">
-            <CardTitle className="text-lg text-muted-foreground">Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-4xl mb-2">📊</div>
-            <p className="text-muted-foreground">Advanced technical indicators and pattern recognition</p>
-          </CardContent>
-        </Card>
-        
-        <Card className="p-6 border-dashed border-2 border-muted-foreground/20">
-          <CardHeader className="text-center pb-3">
-            <CardTitle className="text-lg text-muted-foreground">Coming Soon</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <div className="text-4xl mb-2">🔮</div>
-            <p className="text-muted-foreground">Price prediction models and risk assessment</p>
-          </CardContent>
-        </Card>
-      </div>
+    
     </div>
   );
 }

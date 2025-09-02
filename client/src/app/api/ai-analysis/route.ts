@@ -1,74 +1,70 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import Anthropic from "@anthropic-ai/sdk";
 
 export async function POST(req: Request) {
   try {
-    const { aiModel, analysisTypes, chartData, newsData } = await req.json();
+    const { symbol, aiModel, analysisTypes, chartData, newsData } = await req.json();
 
-    let prompt = `
-You are a financial analysis assistant. Analyze Bitcoin using the following inputs:
+    // Define JSON schema for analysis output (symbol-agnostic)
+    const analysisSchema = {
+      name: "market_analysis",
+      schema: {
+        type: "object",
+        properties: {
+          summary: {
+            type: "string",
+            description: `Brief summary of ${symbol}'s current situation based on the inputs.`,
+          },
+          sentiment: {
+            type: "string",
+            enum: ["bullish", "bearish", "neutral"],
+            description: `Market sentiment for ${symbol}.`,
+          },
+          position: {
+            type: "string",
+            enum: ["long", "short", "hold"],
+            description: `Suggested trading position for ${symbol}.`,
+          },
+          confidence: {
+            type: "string",
+            enum: ["high", "medium", "low"],
+            description: "Confidence level of the analysis.",
+          },
+        },
+        required: ["summary", "sentiment", "position", "confidence"],
+        additionalProperties: false,
+      },
+    };
+
+    // Dynamic prompt with symbol
+    const prompt = `
+You are a financial analysis assistant. Analyze ${symbol} using the following inputs:
 
 ${analysisTypes.includes("news") ? `News Data:\n${JSON.stringify(newsData, null, 2)}` : ""}
 ${analysisTypes.includes("chart") ? `Chart Data:\n${JSON.stringify(chartData, null, 2)}` : ""}
 
-Return response in JSON:
-{
-  "summary": "...",
-  "sentiment": "bullish/bearish/neutral",
-  "position": "long/short/hold",
-  "confidence": "high/medium/low",
-  "keyFactors": ["...", "..."]
-}
+Return the result strictly following the provided JSON schema.
     `;
 
-    let result;
-    console.log(process.env.OPENAI_API_KEY)
-    // --- ChatGPT (OpenAI) ---
-    if (aiModel === "ChatGPT") {
-      // const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      // const response = await openai.chat.completions.create({
-      //   model: "gpt-5-nano",
-      //   messages: [{ role: "user", content: prompt }]
-      // });
-      const client = new OpenAI({
-        apiKey: process.env.AVALAI_API_KEY,
-        baseURL: "https://api.avalai.ir/v1",
-      });
-      
-      const response = await client.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      });
-      result = response.choices[0].message?.content;
-    }
+    const client = new OpenAI({
+      apiKey: process.env.AVALAI_API_KEY,
+      baseURL: "https://api.avalai.ir/v1",
+    });
 
-    // --- Gemini (Google) ---
-    if (aiModel === "Gemini") {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-      const response = await model.generateContent(prompt);
-      result = response.response.text();
-    }
+    const response = await client.chat.completions.create({
+      model:
+        aiModel === "ChatGPT"
+          ? "gpt-4o"
+          : aiModel === "Gemini"
+          ? "gemini-2.0-flash-lite"
+          : "grok-3-mini",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_schema", json_schema: analysisSchema },
+    });
 
-    // --- Claude (Anthropic) ---
-    if (aiModel === "Claude") {
-      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-      const response = await anthropic.messages.create({
-        model: "claude-3-sonnet-20240229",
-        max_tokens: 500,
-        messages: [{ role: "user", content: prompt }]
-      });
-      result = response.content[0].text;
-    }
+    const result = response.choices[0].message?.content;
 
-    return NextResponse.json({ analysis: result });
+    return NextResponse.json({ analysis: JSON.parse(result!) });
   } catch (error: any) {
     console.error(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
