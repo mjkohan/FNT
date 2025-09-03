@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import TradingViewChart from "@/components/TradingViewChart";
-import NewsSection from "@/components/NewsSection";
+import StockNewsSection from "@/components/StockNewsSection";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -259,9 +259,9 @@ export default function StockPage() {
 
         {/* News Section */}
         <div className="space-y-4">
-          <NewsSection 
-            coinName={stock.description} 
-            coinSymbol={symbol}
+          <StockNewsSection 
+            stockName={stock.description} 
+            stockSymbol={symbol}
             onNewsUpdate={setNewsData}
           />
         </div>

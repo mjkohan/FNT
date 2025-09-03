@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
 import TradingViewChart from "@/components/TradingViewChart";
-import NewsSection from "@/components/NewsSection";
+import StockNewsSection from "@/components/StockNewsSection";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -367,9 +367,9 @@ export default function StockAnalyticsPage() {
 
         {/* News Section */}
         <div className="space-y-4">
-          <NewsSection 
-            coinName={stock.description} 
-            coinSymbol={symbol}
+          <StockNewsSection 
+            stockName={stock.description} 
+            stockSymbol={symbol}
             onNewsUpdate={setNewsData}
           />
         </div>

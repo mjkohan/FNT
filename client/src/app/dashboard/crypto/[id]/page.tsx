@@ -7,7 +7,7 @@ import TradingViewChart from "@/components/TradingViewChart";
 import { BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import NewsSection from "@/components/NewsSection";
+import CryptoNewsSection from "@/components/CryptoNewsSection";
 import OrderBook from "@/components/OrderBook";
 import FearGreedIndex from "@/components/FearGreedIndex";
 
@@ -286,7 +286,7 @@ export default function CryptoDetailPage() {
         </Card>
 
         {/* News Section */}
-        <NewsSection  coinSymbol={coin.symbol} coinName={coin.name} />
+        <CryptoNewsSection  coinSymbol={coin.symbol} coinName={coin.name} />
       </div>
 
       {/* Additional Market Data Section */}

@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
 import TradingViewChart from "@/components/TradingViewChart";
-import NewsSection from "@/components/NewsSection";
+import CryptoNewsSection from "@/components/CryptoNewsSection";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -344,7 +344,7 @@ export default function CryptoAnalyticsPage() {
 
         {/* News Section */}
         <div className="space-y-4">
-          <NewsSection 
+          <CryptoNewsSection 
             coinName={coin.name} 
             coinSymbol={coin.symbol}
             onNewsUpdate={setNewsData}
