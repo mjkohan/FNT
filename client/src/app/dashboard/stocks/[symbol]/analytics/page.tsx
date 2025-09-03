@@ -94,16 +94,7 @@ interface AIAnalysisResult {
   confidence: string;
 }
 
-const INTERVALS = [
-  { value: '1m', label: '1 Minute', description: 'Ultra short-term' },
-  { value: '5m', label: '5 Minutes', description: 'Very short-term' },
-  { value: '15m', label: '15 Minutes', description: 'Short-term' },
-  { value: '30m', label: '30 Minutes', description: 'Short-term' },
-  { value: '1h', label: '1 Hour', description: 'Medium-term' },
-  { value: '4h', label: '4 Hours', description: 'Medium-term' },
-  { value: '1d', label: '1 Day', description: 'Long-term' },
-  { value: '1w', label: '1 Week', description: 'Very long-term' }
-];
+
 
 export default function StockAnalyticsPage() {
   const { symbol } = useParams<{ symbol: string }>();
@@ -127,7 +118,6 @@ export default function StockAnalyticsPage() {
   const stock = stocksData?.find((s: StockData) => s.symbol === symbol);
 
   // State management
-  const [selectedInterval, setSelectedInterval] = useState('1h');
   const [selectedAIModel, setSelectedAIModel] = useState("chatgpt");
   const [analysisTypes, setAnalysisTypes] = useState({
     news: true,
@@ -388,8 +378,8 @@ export default function StockAnalyticsPage() {
           </div>
           <p className="text-muted-foreground text-lg">
             {showAnalysisForm 
-              ? `Get intelligent insights from multiple AI models for ${stock.description} analysis using ${selectedInterval} chart data`
-              : `AI analysis completed for ${stock.description} using ${selectedInterval} data`
+              ? `Get intelligent insights from multiple AI models for ${stock.description} analysis using chart data`
+              : `AI analysis completed for ${stock.description}`
             }
           </p>
         </CardHeader>
@@ -471,31 +461,7 @@ export default function StockAnalyticsPage() {
               </div>
 
               {/* AI Analysis Timeframe Selector */}
-              <div className="space-y-3">
-                <div className="text-lg font-semibold text-foreground">Analysis Timeframe</div>
-                <div className="flex items-center gap-3">
-                  <Label htmlFor="ai-timeframe" className="text-sm text-muted-foreground whitespace-nowrap">
-                    Timeframe:
-                  </Label>
-                  <Select value={selectedInterval} onValueChange={setSelectedInterval}>
-                    <SelectTrigger id="ai-timeframe" className="w-48">
-                      <SelectValue placeholder="Select timeframe" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {INTERVALS.map((interval) => (
-                        <SelectItem key={interval.value} value={interval.value}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{interval.label}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="text-xs text-muted-foreground">
-                    AI will analyze {selectedInterval} data
-                  </div>
-                </div>
-              </div>
+              
 
               {/* Start Analysis Button */}
               <div className="text-center pt-6">
@@ -518,7 +484,7 @@ export default function StockAnalyticsPage() {
                   )}
                 </Button>
                 <p className="text-sm text-muted-foreground mt-3">
-                  Analysis will be generated based on {selectedInterval} chart data and recent news
+                  Analysis will be generated based on chart data and recent news
                 </p>
               </div>
             </div>
@@ -537,7 +503,7 @@ export default function StockAnalyticsPage() {
                       <h3 className="text-xl font-bold text-foreground">AI Analysis Results</h3>
                       <p className="text-sm text-muted-foreground">
                         Generated using {selectedAIModel === "chatgpt" ? "ChatGPT" : 
-                                       selectedAIModel === "gemini" ? "Gemini" : "XAi(Grok)"} • {selectedInterval} timeframe
+                                       selectedAIModel === "gemini" ? "Gemini" : "XAi(Grok)"} 
                       </p>
                     </div>
                   </div>
