@@ -29,9 +29,9 @@ const fetchCommodities = async () => {
   return res.json();
 };
 
-const fetchCommodityRate = async (symbol: string) => {
-  const res = await fetch(`/api/commodities/rate?symbol=${symbol}`);
-  if (!res.ok) throw new Error('Failed to fetch commodity rate');
+const fetchCommodityQuote = async (symbol: string) => {
+  const res = await fetch(`/api/commodities/chart-data?symbol=${symbol}`);
+  if (!res.ok) throw new Error('Failed to fetch commodity quote');
   return res.json();
 };
 
@@ -48,11 +48,23 @@ interface CommodityData {
   tvSymbol: string;
 }
 
-interface CommodityRate {
-  exchange: string;
+interface CommodityQuote {
+  symbol: string;
   name: string;
   price: number;
-  updated: number;
+  changePercentage: number;
+  change: number;
+  volume: number;
+  dayLow: number;
+  dayHigh: number;
+  yearHigh: number;
+  yearLow: number;
+  priceAvg50: number;
+  priceAvg200: number;
+  exchange: string;
+  open: number;
+  previousClose: number;
+  timestamp: number;
 }
 
 export default function CommodityPage() {
@@ -64,9 +76,9 @@ export default function CommodityPage() {
   
   const commodity = commoditiesData?.find((c: CommodityData) => c.symbol === symbol);
   
-  const { data: rate, isLoading: rateLoading, error: rateError } = useQuery({
-    queryKey: ["commodityRate", commodity?.symbol],
-    queryFn: () => fetchCommodityRate(commodity?.symbol || ''),
+  const { data: quoteData, isLoading: quoteLoading, error: quoteError } = useQuery({
+    queryKey: ["commodityQuote", commodity?.symbol],
+    queryFn: () => fetchCommodityQuote(commodity?.symbol || ''),
     enabled: !!commodity?.symbol,
   });
 
@@ -112,22 +124,34 @@ export default function CommodityPage() {
     return `/commodities/${symbol}.png`;
   };
 
-  if (commoditiesLoading || rateLoading || chartLoading) return (
+  if (commoditiesLoading || quoteLoading || chartLoading) return (
     <div className="text-center py-12 text-muted-foreground text-lg">
       Loading...
     </div>
   );
   
-  if (commoditiesError || rateError || chartError || !commodity) return (
+  if (commoditiesError || quoteError || chartError || !commodity) return (
     <div className="text-center py-12 text-destructive text-lg">
       Commodity not found
     </div>
   );
 
-  const price = rate?.price;
-  const exchange = rate?.exchange;
-  const lastRefreshed = rate?.updated;
-  const commodityName = rate?.name || commodity.description;
+  const quote = quoteData?.[0]; // API returns array, get first item
+  const price = quote?.price;
+  const changePercentage = quote?.changePercentage;
+  const change = quote?.change;
+  const volume = quote?.volume;
+  const dayLow = quote?.dayLow;
+  const dayHigh = quote?.dayHigh;
+  const yearHigh = quote?.yearHigh;
+  const yearLow = quote?.yearLow;
+  const priceAvg50 = quote?.priceAvg50;
+  const priceAvg200 = quote?.priceAvg200;
+  const exchange = quote?.exchange;
+  const open = quote?.open;
+  const previousClose = quote?.previousClose;
+  const lastRefreshed = quote?.timestamp;
+  const commodityName = quote?.name || commodity.description;
 
   return (
     <div className="w-full mt-8 flex flex-col space-y-6 p-4">
@@ -187,19 +211,24 @@ export default function CommodityPage() {
                   <div className="text-sm text-muted-foreground">
                     Current Price
                   </div>
+                  {changePercentage !== undefined && (
+                    <div className={`text-sm font-medium mt-1 ${changePercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {changePercentage >= 0 ? '+' : ''}{changePercentage.toFixed(2)}% ({change >= 0 ? '+' : ''}${change.toFixed(2)})
+                    </div>
+                  )}
                 </div>
                 <Separator orientation="vertical" className="h-12" />
                 <div className="text-center">
-                  <div className="text-sm text-muted-foreground">Exchange</div>
+                  <div className="text-sm text-muted-foreground">Day Range</div>
                   <div className="text-lg font-semibold text-foreground">
-                    {exchange || 'N/A'}
+                    {dayLow && dayHigh ? `$${formatNumber(dayLow, 2)} - $${formatNumber(dayHigh, 2)}` : 'N/A'}
                   </div>
                 </div>
                 <Separator orientation="vertical" className="h-12" />
                 <div className="text-center">
-                  <div className="text-sm text-muted-foreground">Last Updated</div>
+                  <div className="text-sm text-muted-foreground">Volume</div>
                   <div className="text-lg font-semibold text-foreground">
-                    {lastRefreshed ? new Date(lastRefreshed * 1000).toLocaleTimeString() : 'N/A'}
+                    {volume ? volume.toLocaleString() : 'N/A'}
                   </div>
                 </div>
               </div>
@@ -265,11 +294,40 @@ export default function CommodityPage() {
             <div className="font-semibold text-lg">
               {price ? `$${formatNumber(price, 2)}` : 'N/A'}
             </div>
+            {changePercentage !== undefined && (
+              <div className={`text-sm font-medium ${changePercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {changePercentage >= 0 ? '+' : ''}{changePercentage.toFixed(2)}%
+              </div>
+            )}
           </div>
           <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">Last Updated</div>
+            <div className="text-sm text-muted-foreground">Open Price</div>
             <div className="font-semibold">
-              {lastRefreshed ? new Date(lastRefreshed * 1000).toLocaleString() : 'N/A'}
+              {open ? `$${formatNumber(open, 2)}` : 'N/A'}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">Previous Close</div>
+            <div className="font-semibold">
+              {previousClose ? `$${formatNumber(previousClose, 2)}` : 'N/A'}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">52-Week High</div>
+            <div className="font-semibold text-green-600">
+              {yearHigh ? `$${formatNumber(yearHigh, 2)}` : 'N/A'}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">52-Week Low</div>
+            <div className="font-semibold text-red-600">
+              {yearLow ? `$${formatNumber(yearLow, 2)}` : 'N/A'}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="text-sm text-muted-foreground">50-Day Average</div>
+            <div className="font-semibold">
+              {priceAvg50 ? `$${formatNumber(priceAvg50, 2)}` : 'N/A'}
             </div>
           </div>
         </CardContent>

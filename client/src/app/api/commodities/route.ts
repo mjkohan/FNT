@@ -5,72 +5,35 @@ export async function GET(req: NextRequest) {
     // Available commodities
     const commodities = [
       {
-        symbol: "gold",
+        name: "gold",
+        symbol: "GCUSD",
         description: "Gold Futures",
         displaySymbol: "GOLD",
         tvSymbol: "GOLD"
       },
       {
-        symbol: "platinum",
-        description: "Platinum",
-        displaySymbol: "PLATINUM",
-        tvSymbol: "PLATINUM"
+        name: "sp500",
+        symbol: "ESUSD",
+        description: "E-Mini S&P 500 Futures",
+        displaySymbol: "SP500",
+        tvSymbol: "SP500"
       },
       {
-        symbol: "lean_hogs",
-        description: "Lean Hogs Futures",
-        displaySymbol: "LEAN_HOGS",
-        tvSymbol: "LEANHOGS"
-      },
-      // {
-      //   symbol: "oat",
-      //   description: "Oat Futures",
-      //   displaySymbol: "OAT",
-      //   tvSymbol: "OAT"
-      // },
-      {
-        symbol: "aluminum",
-        description: "Aluminum Futures",
-        displaySymbol: "ALUMINUM",
-        tvSymbol: "ALUMINUM"
+        name: "silver",
+        symbol: "SIUSD",
+        description: "Silver Futures",
+        displaySymbol: "SILVER",
+        tvSymbol: "SILVER"
       },
       {
-        symbol: "soybean_meal",
-        description: "Soybean Meal Futures",
-        displaySymbol: "SOYBEAN_MEAL",
-        tvSymbol: "SOYBEANMEAL"
-      },
-      {
-        symbol: "lumber",
-        description: "Lumber Futures",
-        displaySymbol: "LUMBER",
-        tvSymbol: "LUMBER"
-      },
-      // {
-      //   symbol: "micro_gold",
-      //   description: "Micro Gold Futures",
-      //   displaySymbol: "MICRO_GOLD",
-      //   tvSymbol: "MICROGOLD"
-      // },
-      {
-        symbol: "feeder_cattle",
-        description: "Feeder Cattle Futures",
-        displaySymbol: "FEEDER_CATTLE",
-        tvSymbol: "FEEDERCATTLE"
-      },
-      // {
-      //   symbol: "rough_rice",
-      //   description: "Rough Rice Futures",
-      //   displaySymbol: "ROUGH_RICE",
-      //   tvSymbol: "RICE"
-      // },
-      {
-        symbol: "palladium",
-        description: "Palladium",
-        displaySymbol: "PALLADIUM",
-        tvSymbol: "PALLADIUM"
+        name: "brent_crude",
+        symbol: "BZUSD",
+        description: "Brent Crude Oil Futures",
+        displaySymbol: "BRENT",
+        tvSymbol: "BRENT"
       }
     ];
+    
     
     
 

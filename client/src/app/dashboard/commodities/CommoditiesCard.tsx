@@ -9,30 +9,45 @@ interface CommoditiesCardProps {
   displaySymbol: string;
 }
 
-interface CommodityRate {
-  exchange: string;
+interface CommodityQuote {
+  symbol: string;
   name: string;
   price: number;
-  updated: number;
+  changePercentage: number;
+  change: number;
+  volume: number;
+  dayLow: number;
+  dayHigh: number;
+  yearHigh: number;
+  yearLow: number;
+  priceAvg50: number;
+  priceAvg200: number;
+  exchange: string;
+  open: number;
+  previousClose: number;
+  timestamp: number;
 }
 
-const fetchCommodityRate = async (symbol: string): Promise<CommodityRate> => {
-  const res = await fetch(`/api/commodities/rate?symbol=${symbol}`);
-  if (!res.ok) throw new Error('Failed to fetch commodity rate');
+const fetchCommodityQuote = async (symbol: string): Promise<CommodityQuote[]> => {
+  const res = await fetch(`/api/commodities/chart-data?symbol=${symbol}`);
+  if (!res.ok) throw new Error('Failed to fetch commodity quote');
   return res.json();
 };
 
 export default function CommoditiesCard({ symbol, description, displaySymbol }: CommoditiesCardProps) {
-  const { data: rate, isLoading, error } = useQuery({
-    queryKey: ["commodityRate", symbol],
-    queryFn: () => fetchCommodityRate(symbol),
+  const { data: quoteData, isLoading, error } = useQuery({
+    queryKey: ["commodityQuote", symbol],
+    queryFn: () => fetchCommodityQuote(symbol),
     staleTime: 60000, // 1 minute
     refetchInterval: 30000, // Refetch every 30 seconds
     retry: 1, // Only retry once to avoid API rate limits
   });
 
-  const price = rate?.price;
-  const exchange = rate?.exchange;
+  const quote = quoteData?.[0]; // API returns array, get first item
+  const price = quote?.price;
+  const changePercentage = quote?.changePercentage;
+  const change = quote?.change;
+  const exchange = quote?.exchange;
 
   // Get commodity image path
   const getCommodityImage = (symbol: string) => {
@@ -81,9 +96,16 @@ export default function CommoditiesCard({ symbol, description, displaySymbol }: 
           {isLoading ? (
             <div className="w-16 h-4 bg-muted rounded animate-pulse mb-1" />
           ) : price ? (
-            <span className="text-base font-mono text-foreground">
-              ${price.toFixed(2)}
-            </span>
+            <div className="text-center">
+              <span className="text-base font-mono text-foreground">
+                ${price.toFixed(2)}
+              </span>
+              {changePercentage !== undefined && (
+                <div className={`text-xs font-medium mt-1 ${changePercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {changePercentage >= 0 ? '+' : ''}{changePercentage.toFixed(2)}%
+                </div>
+              )}
+            </div>
           ) : error ? (
             <span className="text-base font-mono text-muted-foreground">N/A</span>
           ) : (
