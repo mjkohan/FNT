@@ -60,6 +60,54 @@ router.post('/crypto', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * GET /api/news/commodities
+ * Fetch commodities news with caching
+ */
+router.get('/commodities', asyncHandler(async (req, res) => {
+  const { query, page } = newsQuerySchema.parse(req.query);
+  
+  try {
+    const newsData = await NewsService.fetchCommoditiesNews(query, page);
+    
+    res.json({
+      success: true,
+      data: newsData,
+      message: newsData.cached ? 'Data retrieved from cache' : 'Data fetched from API'
+    });
+  } catch (error) {
+    console.error('Commodities news fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch commodities news'
+    });
+  }
+}));
+
+/**
+ * POST /api/news/commodities
+ * Fetch commodities news with POST method (for complex queries)
+ */
+router.post('/commodities', asyncHandler(async (req, res) => {
+  const { query, page } = newsQuerySchema.parse(req.body);
+  
+  try {
+    const newsData = await NewsService.fetchCommoditiesNews(query, page);
+    
+    res.json({
+      success: true,
+      data: newsData,
+      message: newsData.cached ? 'Data retrieved from cache' : 'Data fetched from API'
+    });
+  } catch (error) {
+    console.error('Commodities news fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch commodities news'
+    });
+  }
+}));
+
+/**
  * DELETE /api/news/cache/:query
  * Clear cache for a specific query
  */

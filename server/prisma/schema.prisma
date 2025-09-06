@@ -15,8 +15,20 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   password  String
+  createdAt DateTime  @default(now())
+  bookmarks Bookmark[]
+}
+
+model Bookmark {
+  id       Int    @id @default(autoincrement())
+  category String // 'crypto', 'stocks', 'commodities'
+  symbol   String // 'btc', 'AAPL', 'GCUSD', etc.
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+  
+  @@unique([userId, category, symbol])
 }

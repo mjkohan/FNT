@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TradingViewChart from "@/components/TradingViewChart";
+import CommoditiesNewsSection from "@/components/CommoditiesNewsSection";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -494,6 +495,13 @@ export default function CommodityAnalyticsPage() {
         </CardHeader>
         <TradingViewChart symbol={commodity.tvSymbol} />
       </Card>
+
+      {/* Commodities News Section */}
+      <CommoditiesNewsSection 
+        commodityName={commodity.description}
+        commoditySymbol={commodity.displaySymbol}
+        onNewsUpdate={setNewsData}
+      />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

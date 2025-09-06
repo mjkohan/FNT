@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import newsRoutes from './routes/news';
 import stockNewsRoutes from './routes/stockNews';
+import bookmarkRoutes from './routes/bookmarks';
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +29,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/news', newsRoutes);
 app.use('/api/stock-news', stockNewsRoutes);
 

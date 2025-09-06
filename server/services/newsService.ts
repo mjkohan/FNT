@@ -30,18 +30,32 @@ export class NewsService {
    * Fetch crypto news with Redis caching
    */
   static async fetchCryptoNews(query: string, page: number = 1): Promise<NewsResponse> {
+    return this.fetchNews('crypto', query, page);
+  }
+
+  /**
+   * Fetch commodities news with Redis caching
+   */
+  static async fetchCommoditiesNews(query: string, page: number = 1): Promise<NewsResponse> {
+    return this.fetchNews('commodities', query, page);
+  }
+
+  /**
+   * Generic method to fetch news for any category
+   */
+  private static async fetchNews(category: string, query: string, page: number = 1): Promise<NewsResponse> {
     if (!this.API_KEY) {
       throw new Error('News API key not configured');
     }
 
-    // Generate cache key
-    const cacheKey = redisService.generateNewsCacheKey(query, page);
+    // Generate cache key with category prefix
+    const cacheKey = redisService.generateNewsCacheKey(`${category}:${query}`, page);
     
     try {
       // Check cache first
       const cachedData = await redisService.get(cacheKey);
       if (cachedData) {
-        console.log(`Cache hit for query: ${query}, page: ${page}`);
+        console.log(`Cache hit for ${category} query: ${query}, page: ${page}`);
         return {
           ...cachedData,
           cached: true,
@@ -50,7 +64,7 @@ export class NewsService {
       }
 
       // Cache miss - fetch from API
-      console.log(`Cache miss for query: ${query}, page: ${page} - fetching from API`);
+      console.log(`Cache miss for ${category} query: ${query}, page: ${page} - fetching from API`);
       const apiData = await this.fetchFromNewsAPI(query, page);
       
       // Cache the response for 24 hours
@@ -65,7 +79,7 @@ export class NewsService {
       };
 
     } catch (error) {
-      console.error('Error in fetchCryptoNews:', error);
+      console.error(`Error in fetch${category}News:`, error);
       
       // If Redis fails, try to fetch from API directly
       if (error instanceof Error && error.message.includes('Redis')) {
@@ -90,7 +104,7 @@ export class NewsService {
       q: query,
       from: fromDate,
       sortBy: 'popularity',
-      apiKey: this.API_KEY,
+      apiKey: this.API_KEY!,
       language: 'en',
       pageSize: '10',
       page: page.toString()
@@ -105,7 +119,7 @@ export class NewsService {
         throw new Error(`News API error: ${response.status} ${response.statusText}`);
       }
 
-      const data: NewsResponse = await response.json();
+      const data = await response.json() as NewsResponse;
       
       if (data.status !== 'ok') {
         throw new Error('News API returned an error status');
