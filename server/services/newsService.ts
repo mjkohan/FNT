@@ -41,6 +41,13 @@ export class NewsService {
   }
 
   /**
+   * Fetch stock news with Redis caching
+   */
+  static async fetchStockNews(query: string, page: number = 1): Promise<NewsResponse> {
+    return this.fetchNews('stocks', query, page);
+  }
+
+  /**
    * Generic method to fetch news for any category
    */
   private static async fetchNews(category: string, query: string, page: number = 1): Promise<NewsResponse> {

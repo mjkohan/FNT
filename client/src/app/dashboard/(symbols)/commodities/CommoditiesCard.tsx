@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
+import BookmarkButton from "@/components/BookmarkButton";
 
 interface CommoditiesCardProps {
   symbol: string;
@@ -55,12 +56,24 @@ export default function CommoditiesCard({ symbol, description, displaySymbol }: 
   };
 
   return (
-    <Link href={`/dashboard/commodities/${symbol}`} className="block group focus:outline-none">
-      <Card className="flex flex-col items-center justify-center p-6 shadow-lg rounded-2xl bg-card/90 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-transform duration-200 relative max-h-[300px] min-h-[300px] cursor-pointer">
-        {/* Commodity Type Badge */}
-        <span className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-          {displaySymbol}
-        </span>
+    <div className="block group focus:outline-none relative">
+      <Link href={`/dashboard/commodities/${symbol}`} className="block">
+        <Card className="flex flex-col items-center justify-center p-6 shadow-lg rounded-2xl bg-card/90 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-transform duration-200 relative max-h-[300px] min-h-[300px] cursor-pointer">
+          {/* Commodity Type Badge */}
+          <span className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+            {displaySymbol}
+          </span>
+          
+          {/* Bookmark Button */}
+          <div className="absolute top-3 right-3 z-10">
+            <BookmarkButton
+              category="commodities"
+              symbol={symbol}
+              variant="ghost"
+              size="sm"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            />
+          </div>
         
         
         {/* Commodity Name */}
@@ -118,7 +131,8 @@ export default function CommoditiesCard({ symbol, description, displaySymbol }: 
             </span>
           )}
         </CardContent>
-      </Card>
-    </Link>
+        </Card>
+      </Link>
+    </div>
   );
 }

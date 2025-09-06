@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import BookmarkButton from "@/components/BookmarkButton";
 
 interface StockCardProps {
   symbol: string;
@@ -66,12 +67,24 @@ export default function StockCard({ symbol, description, displaySymbol, type, mi
   const percentColor = priceChange > 0 ? "text-green-600" : priceChange < 0 ? "text-red-600" : "text-muted-foreground";
 
   return (
-    <Link href={`/dashboard/stocks/${symbol}`} className="block group focus:outline-none">
-      <Card className="flex flex-col items-center justify-center p-6 shadow-lg rounded-2xl bg-card/90 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-transform duration-200 relative max-h-[300px] min-h-[300px] cursor-pointer">
-        {/* Exchange Badge */}
-        <span className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
-          {mic}
-        </span>
+    <div className="block group focus:outline-none relative">
+      <Link href={`/dashboard/stocks/${symbol}`} className="block">
+        <Card className="flex flex-col items-center justify-center p-6 shadow-lg rounded-2xl bg-card/90 group-hover:scale-105 group-hover:ring-2 group-hover:ring-primary/40 transition-transform duration-200 relative max-h-[300px] min-h-[300px] cursor-pointer">
+          {/* Exchange Badge */}
+          <span className="absolute top-3 left-3 bg-primary/90 text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+            {mic}
+          </span>
+          
+          {/* Bookmark Button */}
+          <div className="absolute top-3 right-3 z-10">
+            <BookmarkButton
+              category="stocks"
+              symbol={symbol}
+              variant="ghost"
+              size="sm"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            />
+          </div>
         
         {/* Stock Name */}
         <span className="text-lg font-semibold text-center text-foreground mb-0.5 line-clamp-2">
@@ -118,7 +131,8 @@ export default function StockCard({ symbol, description, displaySymbol, type, mi
             <span className="text-xs font-medium mt-1 text-muted-foreground">-</span>
           )}
         </CardContent>
-      </Card>
-    </Link>
+        </Card>
+      </Link>
+    </div>
   );
 }

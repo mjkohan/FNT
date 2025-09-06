@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import TradingViewChart from "@/components/TradingViewChart";
+import CommoditiesNewsSection from "@/components/CommoditiesNewsSection";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -246,8 +247,8 @@ export default function CommodityPage() {
         </div>
       </Card>
 
-      {/* Chart Section */}
-      <div className="grid grid-cols-1 gap-6">
+      {/* Chart and News Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* TradingView Chart */}
         <Card className="p-0 overflow-hidden">
           <CardHeader className="pb-3 px-6 pt-6">
@@ -260,6 +261,12 @@ export default function CommodityPage() {
           </CardHeader>
           <TradingViewChart symbol={commodity.tvSymbol} />
         </Card>
+
+        {/* News Section */}
+        <CommoditiesNewsSection 
+          commodityName={commodityName} 
+          commoditySymbol={commodity.displaySymbol} 
+        />
       </div>
 
       {/* Commodity Information */}

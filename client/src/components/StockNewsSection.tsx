@@ -2,19 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, AlertCircle, Newspaper, Loader2 } from "lucide-react";
+import { NewsService, NewsArticle } from "@/services/newsService";
+import NewsCard from "./NewsCard";
 import { useState, useEffect } from "react";
-
-interface StockNewsArticle {
-  category: string;
-  datetime: number;
-  headline: string;
-  id: number;
-  image: string;
-  related: string;
-  source: string;
-  summary: string;
-  url: string;
-}
 
 interface StockNewsSectionProps {
   stockName: string;
@@ -22,37 +12,49 @@ interface StockNewsSectionProps {
   onNewsUpdate?: (news: any[]) => void;
 }
 
-const fetchStockNews = async (symbol: string): Promise<StockNewsArticle[]> => {
-  const res = await fetch(`/api/stock-news?symbol=${symbol}`);
-  if (!res.ok) throw new Error('Failed to fetch stock news');
-  return res.json();
-};
-
 export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate }: StockNewsSectionProps) {
-  const [allArticles, setAllArticles] = useState<StockNewsArticle[]>([]);
+  const [page, setPage] = useState(1);
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { data: newsData, isLoading, error, refetch, isRefetching } = useQuery({
-    queryKey: ["stock-news", stockSymbol],
-    queryFn: () => fetchStockNews(stockSymbol),
+    queryKey: ["stock-news", stockName, stockSymbol, page],
+    queryFn: () => NewsService.fetchStockNews(`${stockName} ${stockSymbol} stock company`, page),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
     refetchOnWindowFocus: false,
   });
-  
+
   // Update articles when new data comes in
   useEffect(() => {
-    if (newsData) {
-      setAllArticles(newsData);
+    if (newsData?.articles) {
+      if (page === 1) {
+        setAllArticles(newsData.articles);
+      } else {
+        setAllArticles(prev => [...prev, ...newsData.articles]);
+      }
+      setHasMore(newsData.articles.length === 10); // Assuming 10 articles per page
       
       // Notify parent component about news updates
       if (onNewsUpdate) {
-        onNewsUpdate(newsData);
+        onNewsUpdate(newsData.articles);
       }
     }
-  }, [newsData, onNewsUpdate]);
+  }, [newsData, page, onNewsUpdate]);
+
+  const handleLoadMore = async () => {
+    if (hasMore && !isLoadingMore) {
+      setIsLoadingMore(true);
+      setPage(prev => prev + 1);
+      setIsLoadingMore(false);
+    }
+  };
 
   const handleRefresh = () => {
+    setPage(1);
     setAllArticles([]);
+    setHasMore(true);
     refetch();
   };
 
@@ -62,7 +64,7 @@ export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate 
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-foreground flex items-center gap-2">
             <Newspaper className="w-5 h-5" />
-            Company News
+            Related News
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -91,7 +93,7 @@ export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate 
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-foreground flex items-center gap-2">
             <Newspaper className="w-5 h-5" />
-            Company News
+            Related News
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -114,20 +116,20 @@ export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate 
     );
   }
 
-  if (!newsData || allArticles.length === 0) {
+  if (!newsData?.articles || allArticles.length === 0) {
     return (
       <Card className="p-6">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg text-foreground flex items-center gap-2">
             <Newspaper className="w-5 h-5" />
-            Company News
+            Related News
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Newspaper className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">
-              No recent news found for {stockName} ({stockSymbol})
+              No recent news found for {stockName}
             </p>
             <Button 
               onClick={handleRefresh} 
@@ -149,7 +151,7 @@ export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate 
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg text-foreground flex items-center gap-2">
             <Newspaper className="w-5 h-5" />
-            Company News
+            Related News
             <span className="text-sm text-muted-foreground font-normal">
               (Last 24h)
             </span>
@@ -167,93 +169,52 @@ export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate 
       </CardHeader>
       <CardContent className="p-0">
         <div className="space-y-4 px-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
-          {allArticles.map((article: StockNewsArticle, index: number) => (
+          {allArticles.map((article: NewsArticle, index: number) => (
             <div
-              key={`${article.id}-${index}`}
+              key={`${article.url}-${index}`}
               className="animate-in slide-in-from-bottom-2 duration-300"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <StockNewsCard article={article} />
+              <NewsCard article={article} />
             </div>
           ))}
         </div>
         
-        {allArticles.length > 0 && (
+        {/* Load More Section */}
+        {hasMore && (
+          <div className="mt-6 pt-4 border-t border-border px-6">
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm text-muted-foreground text-center">
+                Showing {allArticles.length} of {newsData?.totalResults || 0} articles
+              </p>
+              <Button 
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                variant="outline"
+                size="sm"
+                className="hover:bg-blue-50 dark:hover:bg-blue-950/20"
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More Articles'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {!hasMore && allArticles.length > 0 && (
           <div className="mt-6 pt-4 border-t border-border px-6">
             <p className="text-sm text-muted-foreground text-center">
-              Showing {allArticles.length} recent articles
+              Showing all {allArticles.length} articles
             </p>
           </div>
         )}
       </CardContent>
     </Card>
-  );
-}
-
-// Stock News Card Component
-function StockNewsCard({ article }: { article: StockNewsArticle }) {
-  const formatDate = (timestamp: number) => {
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
-  return (
-    <div className="group cursor-pointer">
-      <a 
-        href={article.url} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className="block p-4 rounded-lg border border-border hover:border-primary/50 hover:shadow-md transition-all duration-200 hover:bg-muted/30"
-      >
-        <div className="flex gap-4">
-          {/* News Image */}
-          <div className="flex-shrink-0">
-            {article.image ? (
-              <img
-                src={article.image}
-                alt={article.headline}
-                className="w-24 h-24 object-cover rounded-lg bg-muted"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
-              />
-            ) : (
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Newspaper className="w-8 h-8 text-white" />
-              </div>
-            )}
-          </div>
-          
-          {/* News Content */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-              {article.headline}
-            </h3>
-            
-            {article.summary && (
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                {truncateText(article.summary, 150)}
-              </p>
-            )}
-            
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="font-medium">{article.source}</span>
-              <span>{formatDate(article.datetime)}</span>
-            </div>
-          </div>
-        </div>
-      </a>
-    </div>
   );
 }

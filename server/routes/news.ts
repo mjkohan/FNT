@@ -108,6 +108,54 @@ router.post('/commodities', asyncHandler(async (req, res) => {
 }));
 
 /**
+ * GET /api/news/stocks
+ * Fetch stocks news with caching
+ */
+router.get('/stocks', asyncHandler(async (req, res) => {
+  const { query, page } = newsQuerySchema.parse(req.query);
+  
+  try {
+    const newsData = await NewsService.fetchStockNews(query, page);
+    
+    res.json({
+      success: true,
+      data: newsData,
+      message: newsData.cached ? 'Data retrieved from cache' : 'Data fetched from API'
+    });
+  } catch (error) {
+    console.error('Stock news fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch stock news'
+    });
+  }
+}));
+
+/**
+ * POST /api/news/stocks
+ * Fetch stocks news with POST method (for complex queries)
+ */
+router.post('/stocks', asyncHandler(async (req, res) => {
+  const { query, page } = newsQuerySchema.parse(req.body);
+  
+  try {
+    const newsData = await NewsService.fetchStockNews(query, page);
+    
+    res.json({
+      success: true,
+      data: newsData,
+      message: newsData.cached ? 'Data retrieved from cache' : 'Data fetched from API'
+    });
+  } catch (error) {
+    console.error('Stock news fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch stock news'
+    });
+  }
+}));
+
+/**
  * DELETE /api/news/cache/:query
  * Clear cache for a specific query
  */

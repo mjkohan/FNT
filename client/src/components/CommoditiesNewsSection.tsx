@@ -1,38 +1,15 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, ExternalLink, Calendar, Globe, RefreshCw } from 'lucide-react';
-import Image from 'next/image';
-
-interface NewsArticle {
-  source: {
-    id: string | null;
-    name: string;
-  };
-  author: string | null;
-  title: string;
-  description: string | null;
-  url: string;
-  urlToImage: string | null;
-  publishedAt: string;
-  content: string | null;
-}
-
-interface NewsResponse {
-  status: string;
-  totalResults: number;
-  articles: NewsArticle[];
-  cached: boolean;
-  cacheExpiry?: number;
-}
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, AlertCircle, Newspaper, Loader2 } from "lucide-react";
+import { NewsService, NewsArticle } from "@/services/newsService";
+import NewsCard from "./NewsCard";
+import { useState, useEffect } from "react";
 
 interface CommoditiesNewsSectionProps {
   commodityName: string;
   commoditySymbol: string;
-  onNewsUpdate?: (news: NewsArticle[]) => void;
+  onNewsUpdate?: (news: any[]) => void;
 }
 
 export default function CommoditiesNewsSection({ 
@@ -40,86 +17,131 @@ export default function CommoditiesNewsSection({
   commoditySymbol, 
   onNewsUpdate 
 }: CommoditiesNewsSectionProps) {
-  const [newsData, setNewsData] = useState<NewsArticle[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [page, setPage] = useState(1);
+  const [allArticles, setAllArticles] = useState<NewsArticle[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const fetchCommoditiesNews = async () => {
-    setIsLoading(true);
-    setError(null);
+  const { data: newsData, isLoading, error, refetch, isRefetching } = useQuery({
+    queryKey: ["commodities-news", commodityName, commoditySymbol, page],
+    queryFn: () => NewsService.fetchCommoditiesNews(`${commodityName} ${commoditySymbol} commodities trading futures`, page),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
 
-    try {
-      // Create a comprehensive search query for commodities
-      const searchQuery = `${commodityName} ${commoditySymbol} commodities trading futures`;
-      
-      const response = await fetch(`/api/news/commodities?query=${encodeURIComponent(searchQuery)}&page=1`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch commodities news');
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.data?.articles) {
-        setNewsData(data.data.articles);
-        setLastUpdated(new Date());
-        onNewsUpdate?.(data.data.articles);
+  // Update articles when new data comes in
+  useEffect(() => {
+    if (newsData?.articles) {
+      if (page === 1) {
+        setAllArticles(newsData.articles);
       } else {
-        throw new Error(data.error || 'Failed to fetch news');
+        setAllArticles(prev => [...prev, ...newsData.articles]);
       }
-    } catch (err) {
-      console.error('Error fetching commodities news:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch news');
-    } finally {
-      setIsLoading(false);
+      setHasMore(newsData.articles.length === 10); // Assuming 10 articles per page
+      
+      // Notify parent component about news updates
+      if (onNewsUpdate) {
+        onNewsUpdate(newsData.articles);
+      }
+    }
+  }, [newsData, page, onNewsUpdate]);
+
+  const handleLoadMore = async () => {
+    if (hasMore && !isLoadingMore) {
+      setIsLoadingMore(true);
+      setPage(prev => prev + 1);
+      setIsLoadingMore(false);
     }
   };
 
-  useEffect(() => {
-    fetchCommoditiesNews();
-  }, [commodityName, commoditySymbol]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
-  };
-
   const handleRefresh = () => {
-    fetchCommoditiesNews();
+    setPage(1);
+    setAllArticles([]);
+    setHasMore(true);
+    refetch();
   };
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-foreground flex items-center gap-2">
+            <Newspaper className="w-5 h-5" />
+            Related News
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="flex gap-4">
+                  <div className="w-24 h-24 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (error) {
     return (
       <Card className="p-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
-            Commodities News
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-foreground flex items-center gap-2">
+            <Newspaper className="w-5 h-5" />
+            Related News
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-destructive mb-4">{error}</p>
-            <Button onClick={handleRefresh} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Try Again
+            <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <p className="text-destructive mb-4">
+              Failed to load news. {error instanceof Error ? error.message : 'Please try again later.'}
+            </p>
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline"
+              disabled={isRefetching}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+              {isRefetching ? 'Refreshing...' : 'Try Again'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!newsData?.articles || allArticles.length === 0) {
+    return (
+      <Card className="p-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg text-foreground flex items-center gap-2">
+            <Newspaper className="w-5 h-5" />
+            Related News
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Newspaper className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground mb-4">
+              No recent news found for {commodityName}
+            </p>
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline"
+              disabled={isRefetching}
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+              {isRefetching ? 'Refreshing...' : 'Refresh'}
             </Button>
           </div>
         </CardContent>
@@ -128,120 +150,72 @@ export default function CommoditiesNewsSection({
   }
 
   return (
-    <Card className="p-0 overflow-hidden">
-      <CardHeader className="pb-3 px-6 pt-6">
+    <Card className="p-6">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg text-foreground flex items-center gap-2">
-            <Globe className="w-5 h-5" />
-            Commodities News - {commoditySymbol}
+            <Newspaper className="w-5 h-5" />
+            Related News
+            <span className="text-sm text-muted-foreground font-normal">
+              (Last 24h)
+            </span>
           </CardTitle>
-          <div className="flex items-center gap-2">
-            {lastUpdated && (
-              <span className="text-xs text-muted-foreground">
-                Updated {getTimeAgo(lastUpdated.toISOString())}
-              </span>
-            )}
-            <Button 
-              onClick={handleRefresh} 
-              variant="ghost" 
-              size="sm"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            </Button>
-          </div>
+          <Button 
+            onClick={handleRefresh} 
+            variant="ghost" 
+            size="sm"
+            disabled={isRefetching}
+            className="h-8 px-2 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </CardHeader>
-      
-      <CardContent className="px-6 pb-6">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 animate-spin mr-2" />
-            <span>Loading commodities news...</span>
-          </div>
-        ) : newsData.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            No commodities news found for {commodityName}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {newsData.slice(0, 5).map((article, index) => (
-              <div 
-                key={index} 
-                className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+      <CardContent className="p-0">
+        <div className="space-y-4 px-2 max-h-[600px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500">
+          {allArticles.map((article: NewsArticle, index: number) => (
+            <div
+              key={`${article.url}-${index}`}
+              className="animate-in slide-in-from-bottom-2 duration-300"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <NewsCard article={article} />
+            </div>
+          ))}
+        </div>
+        
+        {/* Load More Section */}
+        {hasMore && (
+          <div className="mt-6 pt-4 border-t border-border px-6">
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm text-muted-foreground text-center">
+                Showing {allArticles.length} of {newsData?.totalResults || 0} articles
+              </p>
+              <Button 
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                variant="outline"
+                size="sm"
+                className="hover:bg-blue-50 dark:hover:bg-blue-950/20"
               >
-                <div className="flex gap-4">
-                  {article.urlToImage && (
-                    <div className="flex-shrink-0">
-                      <Image
-                        src={article.urlToImage}
-                        alt={article.title}
-                        width={120}
-                        height={80}
-                        className="rounded-lg object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-semibold text-foreground line-clamp-2 hover:text-primary transition-colors">
-                        {article.title}
-                      </h3>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        asChild
-                        className="flex-shrink-0"
-                      >
-                        <a 
-                          href={article.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </a>
-                      </Button>
-                    </div>
-                    
-                    {article.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {article.description}
-                      </p>
-                    )}
-                    
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Globe className="w-3 h-3" />
-                        <span>{article.source.name}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        <span>{formatDate(article.publishedAt)}</span>
-                      </div>
-                      {article.author && (
-                        <Badge variant="secondary" className="text-xs">
-                          {article.author}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {newsData.length > 5 && (
-              <div className="text-center pt-4">
-                <Button variant="outline" size="sm">
-                  View More News ({newsData.length - 5} more)
-                </Button>
-              </div>
-            )}
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More Articles'
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {!hasMore && allArticles.length > 0 && (
+          <div className="mt-6 pt-4 border-t border-border px-6">
+            <p className="text-sm text-muted-foreground text-center">
+              Showing all {allArticles.length} articles
+            </p>
           </div>
         )}
       </CardContent>
