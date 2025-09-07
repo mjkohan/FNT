@@ -306,7 +306,7 @@ export default function WatchlistPage() {
           )}
         </div>
       ) : (
-        <div className={`grid gap-6 overflow-y-auto flex-1 min-h-0 p-4 scrollbar-hide ${
+        <div className={`grid gap-6 overflow-y-auto  min-h-0 p-4 scrollbar-hide ${
           viewMode === 'grid' 
             ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' 
             : 'grid-cols-1'

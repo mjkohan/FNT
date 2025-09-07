@@ -115,18 +115,18 @@ export default function BookmarkCard({
     : null;
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 border-border/50 hover:border-primary/20">
+    <Card className="group hover:shadow-lg transition-all max-h-[180px] duration-200 border-border/50 hover:border-primary/20">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {getCategoryIcon(bookmark.category)}
             <div>
               <CardTitle className="text-lg font-semibold">
-                {bookmark.symbol}
+                {bookmark.symbol.toUpperCase()}
               </CardTitle>
               <Badge 
                 variant="secondary" 
-                className={`mt-1 ${getCategoryColor(bookmark.category)}`}
+                className={` ${getCategoryColor(bookmark.category)}`}
               >
                 {bookmark.category}
               </Badge>
@@ -146,21 +146,7 @@ export default function BookmarkCard({
       
       <CardContent className="pt-0">
         <div className="space-y-3">
-          {showPrice && price !== undefined && (
-            <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-foreground">
-                {formatPrice(price)}
-              </span>
-              {priceChangeDisplay && (
-                <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${priceChangeDisplay.bgColor}`}>
-                  {priceChangeDisplay.icon}
-                  <span className={`text-sm font-medium ${priceChangeDisplay.color}`}>
-                    {changePercentage > 0 ? '+' : ''}{changePercentage.toFixed(2)}%
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
+          
           
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
@@ -176,7 +162,6 @@ export default function BookmarkCard({
               className="h-8 px-2"
             >
               <Link href={getDetailPageUrl()} className="flex items-center gap-1">
-                <span>View Details</span>
                 <ExternalLink className="w-3 h-3" />
               </Link>
             </Button>
