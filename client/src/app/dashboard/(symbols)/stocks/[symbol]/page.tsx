@@ -238,6 +238,17 @@ export default function StockPage() {
                 </div>
               </div>
             )}
+            
+            <Link href={`/dashboard/stocks/${symbol}/analytics`}>
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-gradient-to-r text-white hover:text-white cursor-pointer from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 border-0 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </Button>
+            </Link>
           </div>
         </div>
       </Card>
@@ -317,15 +328,6 @@ export default function StockPage() {
         </Card>
       )}
 
-      {/* Analytics Button */}
-      <div className="text-center">
-        <Link href={`/dashboard/stocks/${symbol}/analytics`}>
-          <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
-            <BarChart3 className="w-5 h-5 mr-2" />
-            View Analytics
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }
