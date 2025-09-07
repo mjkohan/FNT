@@ -8,9 +8,7 @@ interface StockCardProps {
   symbol: string;
   description: string;
   displaySymbol: string;
-  type: string;
   mic: string;
-  currency: string;
 }
 
 interface StockQuote {
@@ -46,15 +44,15 @@ const fetchStockLogo = async (symbol: string): Promise<StockLogo> => {
   return res.json();
 };
 
-export default function StockCard({ symbol, description, displaySymbol, type, mic, currency }: StockCardProps) {
-  const { data: quote, isLoading: quoteLoading, error: quoteError } = useQuery({
+export default function StockCard({ symbol, description, displaySymbol, mic }: StockCardProps) {
+  const { data: quote, isLoading: quoteLoading } = useQuery({
     queryKey: ["stockQuote", symbol],
     queryFn: () => fetchStockQuote(symbol),
     staleTime: 60000, // 1 minute
     refetchInterval: 300000, // Refetch every 30 seconds
   });
 
-  const { data: logo, isLoading: logoLoading, error: logoError } = useQuery({
+  const { data: logo, isLoading: logoLoading } = useQuery({
     queryKey: ["stockLogo", symbol],
     queryFn: () => fetchStockLogo(symbol),
     staleTime: 36000000, // 1 hour (logos don't change often)

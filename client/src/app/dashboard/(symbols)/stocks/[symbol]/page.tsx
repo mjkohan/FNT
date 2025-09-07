@@ -16,14 +16,10 @@ import {
   Minus, 
   ArrowLeft,
   ChartLine,
-  Newspaper,
   Building2,
-  Globe,
-  Calendar,
-  DollarSign
+  Globe
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 
 const fetchStocks = async () => {
   const res = await fetch("/api/stocks", { cache: "no-store" });
@@ -53,33 +49,6 @@ interface StockData {
   currency: string;
 }
 
-interface StockQuote {
-  c: number; // current price
-  d: number; // change
-  dp: number; // percent change
-  h: number; // high price of the day
-  l: number; // low price of the day
-  o: number; // open price of the day
-  pc: number; // previous close price
-  t: number; // timestamp
-}
-
-interface StockLogo {
-  logo: string;
-  name: string;
-  ticker: string;
-  country: string;
-  exchange: string;
-  industry: string;
-  weburl: string;
-  marketCapitalization: number;
-  shareOutstanding: number;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-}
 
 export default function StockPage() {
   const { symbol } = useParams<{ symbol: string }>();
@@ -100,7 +69,6 @@ export default function StockPage() {
     enabled: !!symbol,
   });
 
-  const [newsData, setNewsData] = useState<any[]>([]);
 
   const stock = stocksData?.find((s: StockData) => s.symbol === symbol);
 
@@ -273,7 +241,6 @@ export default function StockPage() {
           <StockNewsSection 
             stockName={stock.description} 
             stockSymbol={symbol}
-            onNewsUpdate={setNewsData}
           />
         </div>
       </div>

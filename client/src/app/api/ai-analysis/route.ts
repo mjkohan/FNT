@@ -65,8 +65,8 @@ Return the result strictly following the provided JSON schema.
     const result = response.choices[0].message?.content;
 
     return NextResponse.json({ analysis: JSON.parse(result!) });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

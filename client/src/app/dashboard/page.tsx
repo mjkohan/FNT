@@ -24,7 +24,7 @@ import { NewsService, NewsArticle, NewsResponse } from "@/services/newsService";
 interface HeadlinesContentProps {
   data: NewsResponse | undefined;
   loading: boolean;
-  error: any;
+  error: Error | null;
   onRetry: () => void;
   category: string;
 }

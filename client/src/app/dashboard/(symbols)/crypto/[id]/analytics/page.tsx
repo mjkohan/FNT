@@ -31,11 +31,10 @@ import {
   AlertCircle,
   Clock,
   Activity,
-  RotateCcw,
   RefreshCw
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const fetchCrypto = async () => {
   const res = await fetch("/api/crypto", { cache: "no-store" });
@@ -109,11 +108,11 @@ export default function CryptoAnalyticsPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [newsData, setNewsData] = useState<any[]>([]);
+  const [newsData, setNewsData] = useState<unknown[]>([]);
   const [showAnalysisForm, setShowAnalysisForm] = useState(true);
 
   // Fetch chart data based on selected interval
-  const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
+  const { data: chartData,  } = useQuery({
     queryKey: ["chartData", coin?.symbol, selectedInterval],
     queryFn: () => fetchChartData(coin?.symbol || 'BTCUSDT', selectedInterval),
     enabled: !!coin?.symbol,

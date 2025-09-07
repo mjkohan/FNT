@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 interface StockNewsSectionProps {
   stockName: string;
   stockSymbol: string;
-  onNewsUpdate?: (news: any[]) => void;
+  onNewsUpdate?: (news: unknown[]) => void;
 }
 
 export default function StockNewsSection({ stockName, stockSymbol, onNewsUpdate }: StockNewsSectionProps) {

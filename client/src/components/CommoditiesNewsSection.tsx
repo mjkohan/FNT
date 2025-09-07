@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 interface CommoditiesNewsSectionProps {
   commodityName: string;
   commoditySymbol: string;
-  onNewsUpdate?: (news: any[]) => void;
+  onNewsUpdate?: (news: unknown[]) => void;
 }
 
 export default function CommoditiesNewsSection({ 

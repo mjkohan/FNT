@@ -51,18 +51,18 @@ export async function GET(request: Request) {
     const binanceData = await response.json();
 
     // Process Binance klines data
-    const candles = binanceData.map((candle: any[]) => ({
+    const candles = binanceData.map((candle: unknown[]) => ({
       timestamp: candle[0], // Open time (ms since Unix epoch)
-      open: parseFloat(candle[1]),
-      high: parseFloat(candle[2]),
-      low: parseFloat(candle[3]),
-      close: parseFloat(candle[4]),
-      //volume: parseFloat(candle[5]),
+      open: parseFloat(String(candle[1])),
+      high: parseFloat(String(candle[2])),
+      low: parseFloat(String(candle[3])),
+      close: parseFloat(String(candle[4])),
+      //volume: parseFloat(String(candle[5])),
       //closeTime: candle[6], // Close time (ms since Unix epoch)
-      //quoteVolume: parseFloat(candle[7]), // Quote asset volume
-      //trades: parseInt(candle[8]), // Number of trades
-      //takerBuyBaseVolume: parseFloat(candle[9]), // Taker buy base asset volume
-      //takerBuyQuoteVolume: parseFloat(candle[10]) // Taker buy quote asset volume
+      //quoteVolume: parseFloat(String(candle[7])), // Quote asset volume
+      //trades: parseInt(String(candle[8])), // Number of trades
+      //takerBuyBaseVolume: parseFloat(String(candle[9])), // Taker buy base asset volume
+      //takerBuyQuoteVolume: parseFloat(String(candle[10])) // Taker buy quote asset volume
     }));
 
     const latestPrice = candles.length > 0 ? candles[candles.length - 1]?.close : null;
@@ -89,11 +89,11 @@ export async function GET(request: Request) {
     
     return response2;
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Binance API error:", error);
     
     // Return appropriate error response
-    const errorMessage = error.message || 'Failed to fetch chart data';
+    const errorMessage = error instanceof Error ? error.message : 'Failed to fetch chart data';
     
     return NextResponse.json(
       { 
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
     const newRequest = new Request(`${request.url}?${searchParams.toString()}`);
     return GET(newRequest);
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("POST chart-data error:", error);
     return NextResponse.json(
       { error: 'Invalid request body' },

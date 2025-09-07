@@ -40,7 +40,7 @@ export default function TradingViewChart({ symbol }: TradingViewChartProps) {
                     // Determine the theme to use - prefer resolvedTheme over theme for more accurate detection
                     const chartTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
                     
-                    new (window as any).TradingView.widget({
+                    (window as unknown as { TradingView: { widget: (config: unknown) => unknown } }).TradingView.widget({
                         container_id: "technical-analysis-chart-demo",
                         width: "100%",
                         height: "100%",

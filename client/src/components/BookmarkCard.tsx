@@ -7,9 +7,7 @@ import { Bookmark } from '@/types/bookmark';
 import { useBookmarkOperations } from '@/hooks/useBookmarks';
 import { 
   Star, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
+  
   Trash2, 
   ExternalLink,
   Bitcoin,
@@ -18,23 +16,16 @@ import {
   Calendar
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
   showPrice?: boolean;
-  price?: number;
   change?: number;
-  changePercentage?: number;
 }
 
 export default function BookmarkCard({ 
-  bookmark, 
-  showPrice = false, 
-  price, 
-  change, 
-  changePercentage 
+  bookmark
 }: BookmarkCardProps) {
   const { deleteBookmark, isDeleting } = useBookmarkOperations();
 
@@ -64,34 +55,7 @@ export default function BookmarkCard({
     }
   };
 
-  const getPriceChangeDisplay = (change: number, changePercentage: number) => {
-    if (change > 0) {
-      return {
-        icon: <TrendingUp className="w-4 h-4" />,
-        color: 'text-green-600',
-        bgColor: 'bg-green-100 dark:bg-green-900/20',
-      };
-    } else if (change < 0) {
-      return {
-        icon: <TrendingDown className="w-4 h-4" />,
-        color: 'text-red-600',
-        bgColor: 'bg-red-100 dark:bg-red-900/20',
-      };
-    } else {
-      return {
-        icon: <Minus className="w-4 h-4" />,
-        color: 'text-gray-600',
-        bgColor: 'bg-gray-100 dark:bg-gray-800',
-      };
-    }
-  };
 
-  const formatPrice = (price: number) => {
-    if (price >= 1e9) return `$${(price / 1e9).toFixed(2)}B`;
-    if (price >= 1e6) return `$${(price / 1e6).toFixed(2)}M`;
-    if (price >= 1e3) return `$${(price / 1e3).toFixed(2)}K`;
-    return `$${price.toFixed(2)}`;
-  };
 
   const getDetailPageUrl = () => {
     switch (bookmark.category) {
@@ -110,9 +74,6 @@ export default function BookmarkCard({
     deleteBookmark(bookmark.id);
   };
 
-  const priceChangeDisplay = showPrice && change !== undefined && changePercentage !== undefined 
-    ? getPriceChangeDisplay(change, changePercentage) 
-    : null;
 
   return (
     <Card className="group hover:shadow-lg transition-all max-h-[180px] duration-200 border-border/50 hover:border-primary/20">

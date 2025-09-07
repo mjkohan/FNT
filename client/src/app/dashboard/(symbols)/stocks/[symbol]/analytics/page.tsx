@@ -35,7 +35,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const fetchStocks = async () => {
   const res = await fetch("/api/stocks", { cache: "no-store" });
@@ -65,28 +65,7 @@ interface StockData {
   currency: string;
 }
 
-interface StockQuote {
-  c: number; // current price
-  d: number; // change
-  dp: number; // percent change
-  h: number; // high price of the day
-  l: number; // low price of the day
-  o: number; // open price of the day
-  pc: number; // previous close price
-  t: number; // timestamp
-}
 
-interface StockLogo {
-  logo: string;
-  name: string;
-  ticker: string;
-  country: string;
-  exchange: string;
-  industry: string;
-  weburl: string;
-  marketCapitalization: number;
-  shareOutstanding: number;
-}
 
 interface AIAnalysisResult {
   summary: string;
@@ -125,7 +104,7 @@ export default function StockAnalyticsPage() {
     enabled: !!symbol,
   });
 
-  const [newsData, setNewsData] = useState<any[]>([]);
+  const [newsData, setNewsData] = useState<unknown[]>([]);
   const [selectedInterval, setSelectedInterval] = useState('1d');
   const [selectedAIModel, setSelectedAIModel] = useState('chatgpt');
   const [analysisTypes, setAnalysisTypes] = useState({ news: true, chart: true });

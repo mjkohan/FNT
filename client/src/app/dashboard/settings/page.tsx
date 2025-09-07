@@ -5,39 +5,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Settings, 
   Bell, 
-  Shield, 
   Palette, 
-  Globe, 
   BarChart3, 
   Smartphone,
   Monitor,
   Moon,
   Sun,
-  Volume2,
-  VolumeX,
-  Mail,
-  MessageSquare,
   AlertTriangle,
-  CheckCircle,
   Save,
   RotateCcw,
   Download,
   Trash2,
   Eye,
-  EyeOff,
   Lock,
-  Key,
-  Smartphone as PhoneIcon,
   Mail as MailIcon,
   Shield as ShieldIcon,
   Globe as GlobeIcon,
-  BarChart3 as ChartIcon,
-  Bell as BellIcon
+  Bell as BellIcon,
+  Key
 } from "lucide-react";
 
 export default function SettingsPage() {
@@ -87,7 +75,7 @@ export default function SettingsPage() {
   const [hasChanges, setHasChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("account");
 
-  const handleSettingChange = (key: string, value: any) => {
+  const handleSettingChange = (key: string, value: unknown) => {
     setSettings(prev => ({ ...prev, [key]: value }));
     setHasChanges(true);
   };

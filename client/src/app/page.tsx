@@ -3,7 +3,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { LogIn, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ModeToggle } from "@/components/theme-toggle"
 
 export default function Home() {

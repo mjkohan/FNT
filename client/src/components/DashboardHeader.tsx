@@ -4,7 +4,6 @@ import { useSession, signOut } from "next-auth/react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   Breadcrumb,

@@ -1,7 +1,7 @@
 "use client";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname, useRouter } from "next/navigation";
-import { Bitcoin, BarChart2, Building2, TrendingUp, DollarSign } from "lucide-react";
+import { Bitcoin, Building2, TrendingUp } from "lucide-react";
 
 
 function DashboardTabs() {

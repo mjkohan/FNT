@@ -91,7 +91,7 @@ export default function CommodityAnalyticsPage() {
     enabled: !!commodity?.symbol,
   });
 
-  const [newsData, setNewsData] = useState<any[]>([]);
+  const [newsData, setNewsData] = useState<unknown[]>([]);
   const [selectedInterval, setSelectedInterval] = useState('1d');
   const [selectedAIModel, setSelectedAIModel] = useState('chatgpt');
   const [analysisTypes, setAnalysisTypes] = useState({ news: true, chart: true });

@@ -19,8 +19,6 @@ import {
   X, 
   Camera,
   Shield,
-  Bell,
-  Globe,
   TrendingUp,
   BarChart3,
   Star

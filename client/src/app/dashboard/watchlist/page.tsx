@@ -27,6 +27,7 @@ import {
   SortDesc
 } from 'lucide-react';
 import { Bookmark } from '@/types/bookmark';
+import Link from 'next/link';
 
 type SortOption = 'symbol' | 'category' | 'createdAt';
 type SortDirection = 'asc' | 'desc';
@@ -43,14 +44,14 @@ export default function WatchlistPage() {
   const filteredAndSortedBookmarks = useMemo(() => {
     if (!bookmarks) return [];
 
-    let filtered = bookmarks.filter((bookmark: Bookmark) => {
+    const filtered = bookmarks.filter((bookmark: Bookmark) => {
       const matchesSearch = bookmark.symbol.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || bookmark.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
 
     filtered.sort((a: Bookmark, b: Bookmark) => {
-      let aValue: any, bValue: any;
+      let aValue: string | Date, bValue: string | Date;
       
       switch (sortBy) {
         case 'symbol':
@@ -291,13 +292,13 @@ export default function WatchlistPage() {
           {bookmarks?.length === 0 && (
             <div className="flex items-center justify-center gap-4">
               <Button asChild>
-                <a href="/dashboard/crypto">Browse Crypto</a>
+                <Link href="/dashboard/crypto">Browse Crypto</Link>
               </Button>
               <Button asChild variant="outline">
-                <a href="/dashboard/stocks">Browse Stocks</a>
+                <Link href="/dashboard/stocks">Browse Stocks</Link>
               </Button>
               <Button asChild variant="outline">
-                <a href="/dashboard/commodities">Browse Commodities</a>
+                <Link href="/dashboard/commodities">Browse Commodities</Link>
               </Button>
             </div>
           )}

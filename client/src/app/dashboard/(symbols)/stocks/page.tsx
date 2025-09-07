@@ -141,9 +141,7 @@ export default function StocksPage() {
             symbol={stock.symbol}
             description={stock.description}
             displaySymbol={stock.displaySymbol}
-            type={stock.type}
             mic={stock.mic}
-            currency={stock.currency}
           />
         ))}
       </div>

@@ -31,5 +31,5 @@ export interface ToggleBookmarkResponse {
 
 export interface BookmarkError {
   error: string;
-  details?: any;
+  details?: unknown;
 }

@@ -10,9 +10,6 @@ import TradingViewChart from "@/components/TradingViewChart";
 import CommoditiesNewsSection from "@/components/CommoditiesNewsSection";
 import { 
   BarChart3, 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
   ArrowLeft,
   ChartLine,
   Globe,
@@ -33,11 +30,6 @@ const fetchCommodityQuote = async (symbol: string) => {
   return res.json();
 };
 
-const fetchCommodityChartData = async (symbol: string) => {
-  const res = await fetch(`/api/commodities/chart-data?symbol=${symbol}&interval=1h`);
-  if (!res.ok) throw new Error('Failed to fetch commodity chart data');
-  return res.json();
-};
 
 interface CommodityData {
   symbol: string;

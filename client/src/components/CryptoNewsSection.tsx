@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 interface NewsSectionProps {
   coinName: string;
   coinSymbol: string;
-  onNewsUpdate?: (news: any[]) => void;
+  onNewsUpdate?: (news: unknown[]) => void;
 }
 
 export default function CryptoNewsSection({ coinName, coinSymbol,onNewsUpdate }: NewsSectionProps) {
