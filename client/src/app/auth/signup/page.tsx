@@ -18,7 +18,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { ModeToggle } from "@/components/theme-toggle"
 
 const signupSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string(),
@@ -56,7 +55,6 @@ export default function SignupPage() {
         body: JSON.stringify({
           email: data.email,
           password: data.password,
-          name: data.name,
         }),
       })
       console.log('Registration response:', res)
@@ -114,31 +112,7 @@ export default function SignupPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-foreground">
-                  Full Name
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    className="pl-10"
-                    {...register("name")}
-                  />
-                </div>
-                {errors.name && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-sm text-destructive"
-                  >
-                    {errors.name.message}
-                  </motion.p>
-                )}
-              </div>
-
+            
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-foreground">
                   Email
