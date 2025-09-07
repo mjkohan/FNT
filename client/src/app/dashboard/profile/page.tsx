@@ -1,101 +1,264 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "sonner";
 import { 
   User, 
   Mail, 
   Calendar, 
-  MapPin, 
-  Phone, 
-  Edit3, 
-  Save, 
-  X, 
-  Camera,
+  
   Shield,
-  TrendingUp,
-  BarChart3,
-  Star
+  Key,
+  AlertCircle,
+  CheckCircle,
+  RefreshCw
 } from "lucide-react";
 
+// Validation schemas
+const updateEmailSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type UpdateEmailForm = z.infer<typeof updateEmailSchema>;
+type ChangePasswordForm = z.infer<typeof changePasswordSchema>;
+
 export default function ProfilePage() {
-  const { data: session } = useSession();
-  const [isEditing, setIsEditing] = useState(false);
+  const { data: session, update } = useSession();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  
+  // Initialize profile data from session
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: session?.user?.email || "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    location: "New York, NY",
-    joinDate: "January 2024",
-    bio: "Financial markets enthusiast with 5+ years of trading experience. Passionate about crypto, stocks, and commodities analysis.",
-    interests: ["Cryptocurrency", "Stock Trading", "Technical Analysis", "Market Research"],
-    riskTolerance: "Moderate",
-    tradingStyle: "Swing Trading",
-    experience: "Intermediate"
+    email: session?.user?.email || "",
+    createdAt: session?.user?.createdAt || "",
+  });
+  
+
+  // Fetch user profile data
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch('/api/users/profile');
+      if (response.ok) {
+        const data = await response.json();
+        const userData = {
+          email: data.user.email || "",
+          createdAt: data.user.createdAt || "",
+        };
+        setProfileData(userData);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
+  // Update profile data when session changes
+  useEffect(() => {
+    if (session?.user) {
+      const userData = {
+        email: session.user.email || "",
+        createdAt: session.user.createdAt || "",
+      };
+      setProfileData(userData);
+      
+      // Also fetch fresh data from backend
+      fetchUserProfile();
+    }
+  }, [session]);
+
+  // API functions
+  const updateEmail = async (email: string) => {
+    const response = await fetch('/api/users/email', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update email');
+    }
+
+    return response.json();
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    const response = await fetch('/api/users/password', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to change password');
+    }
+
+    return response.json();
+  };
+
+ 
+
+  // Email form
+  const emailForm = useForm<UpdateEmailForm>({
+    resolver: zodResolver(updateEmailSchema),
+    defaultValues: { email: profileData.email },
   });
 
-  const [editData, setEditData] = useState(profileData);
+  // Password form
+  const passwordForm = useForm<ChangePasswordForm>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
+  });
 
-  const handleEdit = () => {
-    setEditData(profileData);
-    setIsEditing(true);
+  const onEmailSubmit = async (data: UpdateEmailForm) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await updateEmail(data.email);
+      setProfileData(prev => ({ ...prev, email: data.email }));
+      setSuccess('Email updated successfully!');
+      toast.success('Email updated successfully!');
+      
+      // Update session
+      if (session) {
+        await update({
+          ...session,
+          user: {
+            ...session.user,
+            email: data.email,
+          },
+        });
+      }
+      
+      emailForm.reset({ email: data.email });
+      
+      // Close the dialog
+      setIsEmailDialogOpen(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update email';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSave = () => {
-    setProfileData(editData);
-    setIsEditing(false);
+  const onPasswordSubmit = async (data: ChangePasswordForm) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await changePassword(data.currentPassword, data.newPassword);
+      setSuccess('Password changed successfully!');
+      toast.success('Password changed successfully!');
+      passwordForm.reset();
+      
+      // Close the dialog
+      setIsPasswordDialogOpen(false);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to change password';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCancel = () => {
-    setEditData(profileData);
-    setIsEditing(false);
+  // Reset forms when dialogs are closed
+  const handleEmailDialogClose = (open: boolean) => {
+    setIsEmailDialogOpen(open);
+    if (!open) {
+      emailForm.reset({ email: profileData.email });
+      setError(null);
+      setSuccess(null);
+    }
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setEditData(prev => ({ ...prev, [field]: value }));
+  const handlePasswordDialogClose = (open: boolean) => {
+    setIsPasswordDialogOpen(open);
+    if (!open) {
+      passwordForm.reset();
+      setError(null);
+      setSuccess(null);
+    }
   };
 
-  const stats = [
-    { label: "Portfolio Value", value: "$125,430", icon: TrendingUp, change: "+12.5%" },
-    { label: "Active Trades", value: "23", icon: BarChart3, change: "+3 this week" },
-    { label: "Watchlist Items", value: "47", icon: Star, change: "5 new" }
-  ];
+  // Format join date
+  const formatJoinDate = (dateString: string) => {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long' 
+    });
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full px-4 mt-8 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-          <p className="text-muted-foreground">Manage your personal information and preferences</p>
+          <p className="text-muted-foreground">Manage your account settings and preferences</p>
         </div>
         <div className="flex gap-2">
-          {isEditing ? (
-            <>
-              <Button onClick={handleSave} className="gap-2">
-                <Save className="w-4 h-4" />
-                Save Changes
-              </Button>
-              <Button variant="outline" onClick={handleCancel} className="gap-2">
-                <X className="w-4 h-4" />
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <Button onClick={handleEdit} className="gap-2">
-              <Edit3 className="w-4 h-4" />
-              Edit Profile
-            </Button>
-          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchUserProfile}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
       </div>
+
+      {/* Error/Success Messages */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {success && (
+        <Alert className="border-green-200 bg-green-50 text-green-800">
+          <CheckCircle className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
+        </Alert>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Profile Overview */}
@@ -105,48 +268,24 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
-                Basic Information
+                Account Information
               </CardTitle>
-              <CardDescription>
-                Your personal details and contact information
-              </CardDescription>
+              
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                    {profileData.firstName[0]}{profileData.lastName[0]}
+                    {profileData.email ? profileData.email[0].toUpperCase() : 'U'}
                   </div>
-                  {isEditing && (
-                    <Button
-                      size="icon"
-                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full"
-                      variant="secondary"
-                    >
-                      <Camera className="w-3 h-3" />
-                    </Button>
-                  )}
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-semibold">
-                    {isEditing ? (
-                      <div className="flex gap-2">
-                        <Input
-                          value={editData.firstName}
-                          onChange={(e) => handleInputChange("firstName", e.target.value)}
-                          className="w-32"
-                        />
-                        <Input
-                          value={editData.lastName}
-                          onChange={(e) => handleInputChange("lastName", e.target.value)}
-                          className="w-32"
-                        />
-                      </div>
-                    ) : (
-                      `${profileData.firstName} ${profileData.lastName}`
-                    )}
+                    {profileData.email || 'User'}
                   </h3>
-                  <p className="text-muted-foreground">Member since {profileData.joinDate}</p>
+                  <p className="text-muted-foreground">
+                    Member since {formatJoinDate(profileData.createdAt)}
+                  </p>
                 </div>
               </div>
 
@@ -156,145 +295,21 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <Label htmlFor="email" className="flex items-center gap-2">
                     <Mail className="w-4 h-4" />
-                    Email
+                    Email Address
                   </Label>
-                  {isEditing ? (
-                    <Input
-                      id="email"
-                      value={editData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                    />
-                  ) : (
-                    <p className="text-sm">{profileData.email}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    Phone
-                  </Label>
-                  {isEditing ? (
-                    <Input
-                      id="phone"
-                      value={editData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                    />
-                  ) : (
-                    <p className="text-sm">{profileData.phone}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="location" className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Location
-                  </Label>
-                  {isEditing ? (
-                    <Input
-                      id="location"
-                      value={editData.location}
-                      onChange={(e) => handleInputChange("location", e.target.value)}
-                    />
-                  ) : (
-                    <p className="text-sm">{profileData.location}</p>
-                  )}
+                  
+                    <p className="text-sm font-medium">{profileData.email || 'Not set'}</p>
+                  
                 </div>
 
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    Join Date
+                    Account Created
                   </Label>
-                  <p className="text-sm">{profileData.joinDate}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Bio */}
-          <Card>
-            <CardHeader>
-              <CardTitle>About Me</CardTitle>
-              <CardDescription>
-                Tell others about yourself and your trading experience
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isEditing ? (
-                <textarea
-                  value={editData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  className="w-full min-h-[100px] p-3 border rounded-md resize-none"
-                  placeholder="Tell us about yourself..."
-                />
-              ) : (
-                <p className="text-sm leading-relaxed">{profileData.bio}</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Trading Preferences */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Trading Preferences</CardTitle>
-              <CardDescription>
-                Your trading style and risk preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label>Risk Tolerance</Label>
-                  {isEditing ? (
-                    <select
-                      value={editData.riskTolerance}
-                      onChange={(e) => handleInputChange("riskTolerance", e.target.value)}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="Conservative">Conservative</option>
-                      <option value="Moderate">Moderate</option>
-                      <option value="Aggressive">Aggressive</option>
-                    </select>
-                  ) : (
-                    <Badge variant="secondary">{profileData.riskTolerance}</Badge>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Trading Style</Label>
-                  {isEditing ? (
-                    <select
-                      value={editData.tradingStyle}
-                      onChange={(e) => handleInputChange("tradingStyle", e.target.value)}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="Day Trading">Day Trading</option>
-                      <option value="Swing Trading">Swing Trading</option>
-                      <option value="Position Trading">Position Trading</option>
-                      <option value="Scalping">Scalping</option>
-                    </select>
-                  ) : (
-                    <Badge variant="outline">{profileData.tradingStyle}</Badge>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Experience Level</Label>
-                  {isEditing ? (
-                    <select
-                      value={editData.experience}
-                      onChange={(e) => handleInputChange("experience", e.target.value)}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                      <option value="Expert">Expert</option>
-                    </select>
-                  ) : (
-                    <Badge variant="default">{profileData.experience}</Badge>
-                  )}
+                  <p className="text-sm font-medium">
+                    {formatJoinDate(profileData.createdAt)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -303,49 +318,6 @@ export default function ProfilePage() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Quick Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {stats.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-                        <Icon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">{stat.label}</p>
-                        <p className="text-xs text-muted-foreground">{stat.change}</p>
-                      </div>
-                    </div>
-                    <p className="font-semibold">{stat.value}</p>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-
-          {/* Interests */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Interests</CardTitle>
-              <CardDescription>Your market interests</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {profileData.interests.map((interest, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
-                    {interest}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Security */}
           <Card>
             <CardHeader>
@@ -353,19 +325,116 @@ export default function ProfilePage() {
                 <Shield className="w-5 h-5" />
                 Security
               </CardTitle>
+              <CardDescription>
+                Manage your account security settings
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Two-Factor Authentication</span>
-                <Badge variant="outline">Enabled</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Email Notifications</span>
-                <Badge variant="outline">Enabled</Badge>
-              </div>
-              <Button variant="outline" size="sm" className="w-full">
-                Change Password
-              </Button>
+              {/* Change Email Dialog */}
+              <Dialog open={isEmailDialogOpen} onOpenChange={handleEmailDialogClose}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Change Email
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Change Email Address</DialogTitle>
+                    <DialogDescription>
+                      Enter your new email address. You&apos;ll need to verify it before it becomes active.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">New Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter new email"
+                        {...emailForm.register("email")}
+                      />
+                      {emailForm.formState.errors.email && (
+                        <p className="text-sm text-red-600">
+                          {emailForm.formState.errors.email.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Updating...' : 'Update Email'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+
+              {/* Change Password Dialog */}
+              <Dialog open={isPasswordDialogOpen} onOpenChange={handlePasswordDialogClose}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Key className="w-4 h-4 mr-2" />
+                    Change Password
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Change Password</DialogTitle>
+                    <DialogDescription>
+                      Enter your current password and choose a new one.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Input
+                        id="currentPassword"
+                        type="password"
+                        placeholder="Enter current password"
+                        {...passwordForm.register("currentPassword")}
+                      />
+                      {passwordForm.formState.errors.currentPassword && (
+                        <p className="text-sm text-red-600">
+                          {passwordForm.formState.errors.currentPassword.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <Input
+                        id="newPassword"
+                        type="password"
+                        placeholder="Enter new password"
+                        {...passwordForm.register("newPassword")}
+                      />
+                      {passwordForm.formState.errors.newPassword && (
+                        <p className="text-sm text-red-600">
+                          {passwordForm.formState.errors.newPassword.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Confirm new password"
+                        {...passwordForm.register("confirmPassword")}
+                      />
+                      {passwordForm.formState.errors.confirmPassword && (
+                        <p className="text-sm text-red-600">
+                          {passwordForm.formState.errors.confirmPassword.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button type="submit" disabled={isLoading}>
+                        {isLoading ? 'Changing...' : 'Change Password'}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardContent>
           </Card>
         </div>

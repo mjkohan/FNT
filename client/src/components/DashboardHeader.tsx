@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, User, Settings, LogOut } from "lucide-react";
+import { ChevronDown, User, LogOut } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
   Breadcrumb,
@@ -115,12 +115,7 @@ export default function DashboardHeader() {
               Profile
             </a>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild className="flex items-center gap-3 px-3 py-3 text-base font-medium rounded-lg hover:bg-muted/40 transition-colors">
-            <a href="/dashboard/settings" className="flex items-center gap-3 w-full">
-              <Settings className="w-5 h-5 text-primary" />
-              Settings
-            </a>
-          </DropdownMenuItem>
+          
           <DropdownMenuSeparator className="my-1" />
           <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="flex items-center gap-3 px-3 py-3 text-base font-semibold text-destructive rounded-lg hover:bg-destructive/10 cursor-pointer transition-colors">
             <LogOut className="w-5 h-5 text-destructive" />

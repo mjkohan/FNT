@@ -51,7 +51,6 @@ function LoginForm() {
         email: data.email,
         password: data.password,
       })
-      console.log(res)
       if (res?.error) {
         setError(res.error === "CredentialsSignin" ? "Invalid email or password" : (res.error || "Login failed"))
       } else if (res?.ok) {

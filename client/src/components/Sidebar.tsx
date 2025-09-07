@@ -7,7 +7,6 @@ import {
   Bitcoin, 
   Building2, 
   TrendingUp, 
-  Settings,
 } from "lucide-react"
 
 import {
@@ -76,12 +75,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: "/dashboard/profile",
           icon: User,
           isActive: pathname.includes("/dashboard/profile")
-        },
-        {
-          title: "Settings",
-          url: "/dashboard/settings",
-          icon: Settings,
-          isActive: pathname.includes("/dashboard/settings")
         }
       ]
     }

@@ -2,9 +2,10 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_URL = process.env.BACKEND_URL +'/api' || "http://localhost:3000/api";
 
 async function loginUser(credentials: { email: string; password: string }) {
+  console.log(credentials);
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -32,6 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return {
             id: data.user.id,
             email: data.user.email,
+            createdAt: data.user.createdAt,
             token: data.token as string,
           };
         }
@@ -49,6 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user && 'id' in user && 'email' in user && 'token' in user) {
         token.id = user.id;
         token.email = user.email;
+        token.createdAt = user.createdAt;
         token.accessToken = user.token;
       }
       return token;
@@ -57,6 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
+        session.user.createdAt = token.createdAt as string;
         session.accessToken = token.accessToken as string;
       }
       return session;
