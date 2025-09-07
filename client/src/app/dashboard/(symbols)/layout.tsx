@@ -1,17 +1,8 @@
 "use client";
-import { SessionProvider } from "next-auth/react";
-import DashboardHeader from "@/components/DashboardHeader";
-import { AppSidebar } from "@/components/Sidebar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePathname, useRouter } from "next/navigation";
 import { Bitcoin, BarChart2, Building2, TrendingUp, DollarSign } from "lucide-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
 
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
 
 function DashboardTabs() {
   const pathname = usePathname();
@@ -47,26 +38,17 @@ function DashboardTabs() {
 
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient());
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
   const isDetailPage = segments.length > 2; 
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionProvider>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            <DashboardHeader />
+    
             <div className="flex flex-1 flex-col gap-4 p-4">
               {!isDetailPage && <DashboardTabs />}
               
               {children}
             </div>
-          </SidebarInset>
-        </SidebarProvider>
-      </SessionProvider>
-    </QueryClientProvider>
+          
   );
 } 
