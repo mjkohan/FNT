@@ -29,9 +29,7 @@ export default function Home() {
                 Welcome to FNT
               </CardTitle>
             </motion.div>
-            <CardDescription className="text-lg text-muted-foreground">
-              Your modern authentication system with beautiful UI
-            </CardDescription>
+            
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -60,9 +58,7 @@ export default function Home() {
               </motion.div>
             </div>
             
-            <div className="text-center text-sm text-muted-foreground">
-              <p>Built with Next.js, TypeScript, Tailwind CSS, and shadcn/ui</p>
-            </div>
+            
           </CardContent>
         </Card>
       </motion.div>
