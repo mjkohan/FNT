@@ -7,10 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface OrderBookEntry {
-  price: string;
-  quantity: string;
-}
+
 
 interface OrderBookData {
   lastUpdateId: number;
@@ -197,8 +194,6 @@ export default function OrderBook({ symbol }: OrderBookProps) {
             Asks (Sell)
           </div>
           {orderBook.asks.slice(0, 10).map((ask, index) => {
-            const price = parseFloat(ask[0]);
-            const quantity = parseFloat(ask[1]);
             const total = calculateTotal(orderBook.asks, index);
             const percentage = (total / maxAskTotal) * 100;
             
@@ -236,8 +231,6 @@ export default function OrderBook({ symbol }: OrderBookProps) {
             Bids (Buy)
           </div>
           {orderBook.bids.slice(0, 10).map((bid, index) => {
-            const price = parseFloat(bid[0]);
-            const quantity = parseFloat(bid[1]);
             const total = calculateTotal(orderBook.bids, index);
             const percentage = (total / maxBidTotal) * 100;
             

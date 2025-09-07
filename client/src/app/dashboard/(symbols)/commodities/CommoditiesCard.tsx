@@ -47,7 +47,6 @@ export default function CommoditiesCard({ symbol, description, displaySymbol }: 
   const quote = quoteData?.[0]; // API returns array, get first item
   const price = quote?.price;
   const changePercentage = quote?.changePercentage;
-  const change = quote?.change;
   const exchange = quote?.exchange;
 
   // Get commodity image path

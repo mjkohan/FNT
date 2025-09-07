@@ -15,7 +15,6 @@ import TradingViewChart from "@/components/TradingViewChart";
 import CommoditiesNewsSection from "@/components/CommoditiesNewsSection";
 import FearGreedIndex from "@/components/FearGreedIndex";
 import { 
-  BarChart3, 
   TrendingUp, 
   TrendingDown, 
   Minus, 
@@ -36,7 +35,7 @@ import {
   DollarSign
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const fetchCommodities = async () => {
   const res = await fetch("/api/commodities", { cache: "no-store" });
@@ -57,24 +56,7 @@ interface CommodityData {
   tvSymbol: string;
 }
 
-interface CommodityQuote {
-  symbol: string;
-  name: string;
-  price: number;
-  changePercentage: number;
-  change: number;
-  volume: number;
-  dayLow: number;
-  dayHigh: number;
-  yearHigh: number;
-  yearLow: number;
-  priceAvg50: number;
-  priceAvg200: number;
-  exchange: string;
-  open: number;
-  previousClose: number;
-  timestamp: number;
-}
+
 
 interface AIAnalysisResult {
   summary: string;
@@ -235,17 +217,11 @@ export default function CommodityAnalyticsPage() {
   const quote = quoteData?.[0]; // API returns array, get first item
   const price = quote?.price;
   const changePercentage = quote?.changePercentage;
-  const change = quote?.change;
   const volume = quote?.volume;
   const dayLow = quote?.dayLow;
   const dayHigh = quote?.dayHigh;
   const yearHigh = quote?.yearHigh;
-  const yearLow = quote?.yearLow;
-  const priceAvg50 = quote?.priceAvg50;
-  const priceAvg200 = quote?.priceAvg200;
   const exchange = quote?.exchange;
-  const open = quote?.open;
-  const previousClose = quote?.previousClose;
   const commodityName = quote?.name || commodity.description;
 
   const priceChangeDisplay = getPriceChangeDisplay(changePercentage || 0);

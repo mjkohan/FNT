@@ -70,11 +70,7 @@ export default function FearGreedIndex() {
     return 'text-red-600 bg-red-100 dark:bg-red-900/20';
   };
 
-  const getFearGreedIcon = (value: number) => {
-    if (value >= 60) return <TrendingUp className="w-4 h-4" />;
-    if (value <= 40) return <TrendingDown className="w-4 h-4" />;
-    return <Minus className="w-4 h-4" />;
-  };
+  
 
   const getFearGreedLabel = (value: number): string => {
     if (value >= 80) return 'Extreme Greed';

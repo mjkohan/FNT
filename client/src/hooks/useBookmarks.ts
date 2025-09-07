@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import {  useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookmarkService } from '@/services/bookmarkService';
 import { Bookmark, CreateBookmarkRequest, UpdateBookmarkRequest } from '@/types/bookmark';
@@ -160,7 +160,7 @@ export function useBookmarkOperations() {
 
   const toggleBookmarkMutation = useMutation({
     mutationFn: bookmarkService.toggleBookmark,
-    onError: (err, bookmarkData) => {
+    onError: () => {
       // Force refetch from server on error to get correct state
       queryClient.refetchQueries({ queryKey: ['bookmarks'] });
       queryClient.refetchQueries({ queryKey: ['bookmarks', 'crypto'] });
@@ -203,7 +203,6 @@ export function useBookmarkButton(
   category: 'crypto' | 'stocks' | 'commodities',
   symbol: string
 ) {
-  const queryClient = useQueryClient();
   const isBookmarked = useIsBookmarked(category, symbol);
   const { toggleBookmark, isToggling } = useBookmarkOperations();
 

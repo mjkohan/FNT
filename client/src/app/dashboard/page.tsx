@@ -7,16 +7,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
   Bitcoin, 
   Building2, 
-  BarChart3,
-  Star,
-  Activity,
   ArrowRight,
-  Eye,
-  Calendar,
   ExternalLink,
   RefreshCw,
   Briefcase,

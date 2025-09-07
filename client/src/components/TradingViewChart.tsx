@@ -10,7 +10,7 @@ interface TradingViewChartProps {
     loader?: boolean;
 }
 
-export default function TradingViewChart({ symbol, loader }: TradingViewChartProps) {
+export default function TradingViewChart({ symbol }: TradingViewChartProps) {
     const onLoadScriptRef = useRef<(() => void) | null>(null);
     // Get current theme for chart styling
     const { resolvedTheme } = useTheme();

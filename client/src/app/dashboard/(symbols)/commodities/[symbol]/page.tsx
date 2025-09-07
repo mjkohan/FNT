@@ -16,13 +16,10 @@ import {
   ArrowLeft,
   ChartLine,
   Globe,
-  Calendar,
   DollarSign,
-  RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
 
 const fetchCommodities = async () => {
   const res = await fetch("/api/commodities", { cache: "no-store" });
@@ -49,24 +46,7 @@ interface CommodityData {
   tvSymbol: string;
 }
 
-interface CommodityQuote {
-  symbol: string;
-  name: string;
-  price: number;
-  changePercentage: number;
-  change: number;
-  volume: number;
-  dayLow: number;
-  dayHigh: number;
-  yearHigh: number;
-  yearLow: number;
-  priceAvg50: number;
-  priceAvg200: number;
-  exchange: string;
-  open: number;
-  previousClose: number;
-  timestamp: number;
-}
+
 
 export default function CommodityPage() {
   const { symbol } = useParams<{ symbol: string }>();
@@ -83,11 +63,7 @@ export default function CommodityPage() {
     enabled: !!commodity?.symbol,
   });
 
-  const { data: chartData, isLoading: chartLoading, error: chartError } = useQuery({
-    queryKey: ["commodityChart", commodity?.symbol],
-    queryFn: () => fetchCommodityChartData(commodity?.symbol || ''),
-    enabled: !!commodity?.symbol,
-  });
+  
 
   // Helper function to format numbers
   const formatNumber = (num: number, decimals: number = 2) => {
@@ -95,43 +71,20 @@ export default function CommodityPage() {
   };
 
   // Helper function to get price change icon and color
-  const getPriceChangeDisplay = (change: number) => {
-    if (change > 0) {
-      return {
-        icon: <TrendingUp className="w-4 h-4" />,
-        color: "text-green-600",
-        bgColor: "bg-green-100 dark:bg-green-900/20",
-        textColor: "text-green-700 dark:text-green-400"
-      };
-    } else if (change < 0) {
-      return {
-        icon: <TrendingDown className="w-4 h-4" />,
-        color: "text-red-600",
-        bgColor: "bg-red-100 dark:bg-red-900/20",
-        textColor: "text-red-700 dark:text-red-400"
-      };
-    } else {
-      return {
-        icon: <Minus className="w-4 h-4" />,
-        color: "text-gray-600",
-        bgColor: "bg-gray-100 dark:bg-gray-800",
-        textColor: "text-gray-700 dark:text-gray-400"
-      };
-    }
-  };
+  
 
   // Get commodity image path
   const getCommodityImage = (symbol: string) => {
     return `/commodities/${symbol}.png`;
   };
 
-  if (commoditiesLoading || quoteLoading || chartLoading) return (
+  if (commoditiesLoading || quoteLoading ) return (
     <div className="text-center py-12 text-muted-foreground text-lg">
       Loading...
     </div>
   );
   
-  if (commoditiesError || quoteError || chartError || !commodity) return (
+  if (commoditiesError || quoteError  || !commodity) return (
     <div className="text-center py-12 text-destructive text-lg">
       Commodity not found
     </div>
@@ -147,11 +100,9 @@ export default function CommodityPage() {
   const yearHigh = quote?.yearHigh;
   const yearLow = quote?.yearLow;
   const priceAvg50 = quote?.priceAvg50;
-  const priceAvg200 = quote?.priceAvg200;
   const exchange = quote?.exchange;
   const open = quote?.open;
   const previousClose = quote?.previousClose;
-  const lastRefreshed = quote?.timestamp;
   const commodityName = quote?.name || commodity.description;
 
   return (

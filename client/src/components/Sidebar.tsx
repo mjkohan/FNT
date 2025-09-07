@@ -2,16 +2,12 @@ import * as React from "react"
 import { usePathname } from "next/navigation"
 import { 
   Home, 
-  Newspaper, 
   Star, 
   User, 
   Bitcoin, 
-  BarChart2, 
   Building2, 
   TrendingUp, 
-  DollarSign,
   Settings,
-  LogOut
 } from "lucide-react"
 
 import {

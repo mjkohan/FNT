@@ -9,7 +9,7 @@ const POPULAR_TICKERS = [
   "BA", "COST", "IBM", "HON", "AMGN", "MDLZ"
 ];
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // Return the popular tickers array directly
     const stocksData = POPULAR_TICKERS.map(symbol => ({
