@@ -42,12 +42,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           isActive: pathname === "/dashboard"
         },
         {
-          title: "Latest News",
-          url: "/dashboard/news",
-          icon: Newspaper,
-          isActive: pathname === "/dashboard/news"
-        },
-        {
           title: "Watchlist",
           url: "/dashboard/watchlist",
           icon: Star,
