@@ -51,13 +51,13 @@ export default function StockCard({ symbol, description, displaySymbol, type, mi
     queryKey: ["stockQuote", symbol],
     queryFn: () => fetchStockQuote(symbol),
     staleTime: 60000, // 1 minute
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 300000, // Refetch every 30 seconds
   });
 
   const { data: logo, isLoading: logoLoading, error: logoError } = useQuery({
     queryKey: ["stockLogo", symbol],
     queryFn: () => fetchStockLogo(symbol),
-    staleTime: 3600000, // 1 hour (logos don't change often)
+    staleTime: 36000000, // 1 hour (logos don't change often)
   });
 
   const loading = quoteLoading || logoLoading;

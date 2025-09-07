@@ -27,9 +27,14 @@ export default function BookmarkButton({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (isLoading) return; // Prevent multiple clicks
+    
+    // Make the API call
     handleToggle();
   };
-
+  
+  console.log('BookmarkButton state:', { category, symbol, isBookmarked, isLoading });
   return (
     <Button
       variant={variant}

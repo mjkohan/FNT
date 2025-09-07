@@ -9,7 +9,9 @@ export function useBookmarks() {
   return useQuery({
     queryKey: ['bookmarks'],
     queryFn: bookmarkService.getBookmarks,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always consider data stale
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 }
 
@@ -18,17 +20,23 @@ export function useBookmarksByCategory(category: 'crypto' | 'stocks' | 'commodit
   return useQuery({
     queryKey: ['bookmarks', category],
     queryFn: () => bookmarkService.getBookmarksByCategory(category),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 0, // Always consider data stale
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 }
 
 // Hook for checking if an item is bookmarked
 export function useIsBookmarked(category: 'crypto' | 'stocks' | 'commodities', symbol: string) {
-  const { data: bookmarks } = useBookmarks();
+  const { data: bookmarks, isLoading, error } = useBookmarks();
+  console.log('useIsBookmarked:', { category, symbol, bookmarks, isLoading, error });
   
-  return bookmarks?.some(bookmark => 
+  const isBookmarked = bookmarks?.some(bookmark => 
     bookmark.category === category && bookmark.symbol === symbol
   ) ?? false;
+  
+  console.log('isBookmarked result:', isBookmarked);
+  return isBookmarked;
 }
 
 // Hook for bookmark operations (create, update, delete, toggle)
@@ -37,50 +45,144 @@ export function useBookmarkOperations() {
 
   const createBookmarkMutation = useMutation({
     mutationFn: bookmarkService.createBookmark,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
-      toast.success('Added to watchlist');
+    onMutate: async (newBookmark: CreateBookmarkRequest) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['bookmarks'] });
+
+      // Snapshot the previous value
+      const previousBookmarks = queryClient.getQueryData(['bookmarks']);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['bookmarks'], (old: Bookmark[] | undefined) => {
+        if (!old) return old;
+        const optimisticBookmark: Bookmark = {
+          id: Date.now(), // Temporary ID
+          ...newBookmark,
+          userId: 1, // This will be replaced by the server
+          createdAt: new Date().toISOString(),
+        };
+        return [...old, optimisticBookmark];
+      });
+
+      return { previousBookmarks };
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (err, newBookmark, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousBookmarks) {
+        queryClient.setQueryData(['bookmarks'], context.previousBookmarks);
+      }
+      toast.error('Failed to add bookmark');
+    },
+    onSuccess: async () => {
+      // Force refetch from server to get the real data
+      console.log('Create success, refetching queries...');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
+      ]);
+      console.log('Queries invalidated and refetched');
+      toast.success('Added to watchlist');
     },
   });
 
   const updateBookmarkMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateBookmarkRequest }) =>
       bookmarkService.updateBookmark(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
-      toast.success('Bookmark updated');
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['bookmarks'] });
+      const previousBookmarks = queryClient.getQueryData(['bookmarks']);
+
+      queryClient.setQueryData(['bookmarks'], (old: Bookmark[] | undefined) => {
+        if (!old) return old;
+        return old.map(bookmark =>
+          bookmark.id === id
+            ? { ...bookmark, ...data }
+            : bookmark
+        );
+      });
+
+      return { previousBookmarks };
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (err, variables, context) => {
+      if (context?.previousBookmarks) {
+        queryClient.setQueryData(['bookmarks'], context.previousBookmarks);
+      }
+      toast.error('Failed to update bookmark');
+    },
+    onSuccess: async () => {
+      // Force refetch from server to get the real data
+      console.log('Update success, refetching queries...');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
+      ]);
+      console.log('Queries invalidated and refetched');
+      toast.success('Bookmark updated');
     },
   });
 
   const deleteBookmarkMutation = useMutation({
     mutationFn: bookmarkService.deleteBookmark,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
-      toast.success('Removed from watchlist');
+    onMutate: async (id: number) => {
+      await queryClient.cancelQueries({ queryKey: ['bookmarks'] });
+      const previousBookmarks = queryClient.getQueryData(['bookmarks']);
+
+      queryClient.setQueryData(['bookmarks'], (old: Bookmark[] | undefined) => {
+        if (!old) return old;
+        return old.filter(bookmark => bookmark.id !== id);
+      });
+
+      return { previousBookmarks };
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (err, id, context) => {
+      if (context?.previousBookmarks) {
+        queryClient.setQueryData(['bookmarks'], context.previousBookmarks);
+      }
+      toast.error('Failed to remove bookmark');
+    },
+    onSuccess: async () => {
+      // Force refetch from server to get the real data
+      console.log('Delete success, refetching queries...');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
+      ]);
+      console.log('Queries invalidated and refetched');
+      toast.success('Removed from watchlist');
     },
   });
 
   const toggleBookmarkMutation = useMutation({
     mutationFn: bookmarkService.toggleBookmark,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['bookmarks'] });
+    onError: (err, bookmarkData) => {
+      // Force refetch from server on error to get correct state
+      queryClient.refetchQueries({ queryKey: ['bookmarks'] });
+      queryClient.refetchQueries({ queryKey: ['bookmarks', 'crypto'] });
+      queryClient.refetchQueries({ queryKey: ['bookmarks', 'stocks'] });
+      queryClient.refetchQueries({ queryKey: ['bookmarks', 'commodities'] });
+      toast.error('Failed to toggle bookmark');
+    },
+    onSuccess: async (data) => {
+      // Force refetch from server to get the real data
+      console.log('Toggle success, refetching queries...', data);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
+        queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
+      ]);
+      console.log('Queries invalidated and refetched');
       if (data.action === 'added') {
         toast.success('Added to watchlist');
       } else {
         toast.success('Removed from watchlist');
       }
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 
@@ -101,10 +203,13 @@ export function useBookmarkButton(
   category: 'crypto' | 'stocks' | 'commodities',
   symbol: string
 ) {
+  const queryClient = useQueryClient();
   const isBookmarked = useIsBookmarked(category, symbol);
   const { toggleBookmark, isToggling } = useBookmarkOperations();
 
   const handleToggle = useCallback(() => {
+    // Make the API call and let the mutation handle the refetch
+    console.log('Toggling bookmark:', { category, symbol });
     toggleBookmark({ category, symbol });
   }, [category, symbol, toggleBookmark]);
 

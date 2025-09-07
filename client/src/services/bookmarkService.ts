@@ -10,7 +10,7 @@ import {
 class BookmarkService {
   private baseUrl = '/api/bookmarks';
 
-  async getBookmarks(): Promise<Bookmark[]> {
+  getBookmarks = async (): Promise<Bookmark[]> => {
     const response = await fetch(this.baseUrl, {
       method: 'GET',
       headers: {
@@ -27,7 +27,7 @@ class BookmarkService {
     return data.bookmarks;
   }
 
-  async getBookmarksByCategory(category: 'crypto' | 'stocks' | 'commodities'): Promise<Bookmark[]> {
+  getBookmarksByCategory = async (category: 'crypto' | 'stocks' | 'commodities'): Promise<Bookmark[]> => {
     const response = await fetch(`${this.baseUrl}?category=${category}`, {
       method: 'GET',
       headers: {
@@ -44,7 +44,7 @@ class BookmarkService {
     return data.bookmarks;
   }
 
-  async createBookmark(bookmarkData: CreateBookmarkRequest): Promise<Bookmark> {
+  createBookmark = async (bookmarkData: CreateBookmarkRequest): Promise<Bookmark> => {
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
@@ -62,7 +62,7 @@ class BookmarkService {
     return data.bookmark;
   }
 
-  async updateBookmark(id: number, bookmarkData: UpdateBookmarkRequest): Promise<Bookmark> {
+  updateBookmark = async (id: number, bookmarkData: UpdateBookmarkRequest): Promise<Bookmark> => {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'PUT',
       headers: {
@@ -80,7 +80,7 @@ class BookmarkService {
     return data.bookmark;
   }
 
-  async deleteBookmark(id: number): Promise<void> {
+  deleteBookmark = async (id: number): Promise<void> => {
     const response = await fetch(`${this.baseUrl}/${id}`, {
       method: 'DELETE',
       headers: {
@@ -94,7 +94,9 @@ class BookmarkService {
     }
   }
 
-  async toggleBookmark(bookmarkData: CreateBookmarkRequest): Promise<ToggleBookmarkResponse> {
+  toggleBookmark = async (bookmarkData: CreateBookmarkRequest): Promise<ToggleBookmarkResponse> => {
+    console.log('Base URL:', this.baseUrl);
+
     const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
@@ -111,7 +113,7 @@ class BookmarkService {
     return response.json();
   }
 
-  async isBookmarked(category: 'crypto' | 'stocks' | 'commodities', symbol: string): Promise<boolean> {
+  isBookmarked = async (category: 'crypto' | 'stocks' | 'commodities', symbol: string): Promise<boolean> => {
     try {
       const bookmarks = await this.getBookmarks();
       return bookmarks.some(bookmark => 

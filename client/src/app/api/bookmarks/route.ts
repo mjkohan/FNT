@@ -1,12 +1,12 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/auth";
+import { auth } from "@/auth"
+
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth()
     
     if (!session?.accessToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         'Accept': 'application/json',
         'Authorization': `Bearer ${session.accessToken}`,
       },
-      next: { revalidate: 60 }, // Cache for 1 minute
+      cache: 'no-store', // Disable caching to always get fresh data
     });
 
     if (!response.ok) {
@@ -34,7 +34,13 @@ export async function GET(req: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error) {
     console.error('Error fetching bookmarks:', error);
     return NextResponse.json({ error: "Failed to fetch bookmarks" }, { status: 500 });
@@ -43,8 +49,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
+    const session = await auth()
     if (!session?.accessToken) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -78,7 +83,13 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error) {
     console.error('Error processing bookmark request:', error);
     return NextResponse.json({ error: "Failed to process bookmark request" }, { status: 500 });
