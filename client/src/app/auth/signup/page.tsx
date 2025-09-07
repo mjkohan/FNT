@@ -47,9 +47,8 @@ export default function SignupPage() {
     setIsLoading(true)
     setError(null)
     try {
-      console.log('Registering user:', data)
-      console.log(process.env.NEXT_PUBLIC_API_URL + "/auth/register")
-      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/auth/register", {
+      
+      const res = await fetch(process.env.BACKEND_URL + "/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -57,7 +56,6 @@ export default function SignupPage() {
           password: data.password,
         }),
       })
-      console.log('Registration response:', res)
       if (!res.ok) {
         const err = await res.json()
         console.log('Registration error:', err)

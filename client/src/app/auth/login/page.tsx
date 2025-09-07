@@ -46,7 +46,6 @@ function LoginForm() {
     setIsLoading(true)
     setError(null)
     try {
-      console.log('here1')
       const res = await signIn("credentials", {
         redirect: false,
         email: data.email,

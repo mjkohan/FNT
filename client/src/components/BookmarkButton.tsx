@@ -24,11 +24,17 @@ export default function BookmarkButton({
 }: BookmarkButtonProps) {
   const { isBookmarked, handleToggle, isLoading } = useBookmarkButton(category, symbol);
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleToggle();
+  };
+
   return (
     <Button
       variant={variant}
       size={size}
-      onClick={handleToggle}
+      onClick={handleClick}
       disabled={isLoading}
       className={cn(
         'transition-all duration-200',

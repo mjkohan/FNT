@@ -48,6 +48,57 @@ export class NewsService {
   }
 
   /**
+   * Fetch top headlines with Redis caching
+   */
+  static async fetchTopHeadlines(country: string = 'us', category: string = 'business', pageSize: number = 10): Promise<NewsResponse> {
+    if (!this.API_KEY) {
+      throw new Error('News API key not configured');
+    }
+
+    // Generate cache key for top headlines
+    const cacheKey = redisService.generateNewsCacheKey(`top_headlines:${country}:${category}`, 1);
+    
+    try {
+      // Check cache first
+      const cachedData = await redisService.get(cacheKey);
+      if (cachedData) {
+        console.log(`Cache hit for top headlines: ${country}:${category}`);
+        return {
+          ...cachedData,
+          cached: true,
+          cacheExpiry: await redisService.getTTL(cacheKey)
+        };
+      }
+
+      // Cache miss - fetch from API
+      console.log(`Cache miss for top headlines: ${country}:${category} - fetching from API`);
+      const apiData = await this.fetchTopHeadlinesFromAPI(country, category, pageSize);
+      
+      // Cache the response for 24 hours
+      await redisService.set(cacheKey, {
+        ...apiData,
+        cached: false
+      });
+
+      return {
+        ...apiData,
+        cached: false
+      };
+
+    } catch (error) {
+      console.error('Error in fetchTopHeadlines:', error);
+      
+      // If Redis fails, try to fetch from API directly
+      if (error instanceof Error && error.message.includes('Redis')) {
+        console.log('Redis failed, fetching top headlines directly from API');
+        return await this.fetchTopHeadlinesFromAPI(country, category, pageSize);
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
    * Generic method to fetch news for any category
    */
   private static async fetchNews(category: string, query: string, page: number = 1): Promise<NewsResponse> {
@@ -95,6 +146,40 @@ export class NewsService {
       }
       
       throw error;
+    }
+  }
+
+  /**
+   * Fetch top headlines directly from News API
+   */
+  private static async fetchTopHeadlinesFromAPI(country: string, category: string, pageSize: number): Promise<NewsResponse> {
+    const params = new URLSearchParams({
+      country: country,
+      category: category,
+      pageSize: pageSize.toString(),
+      apiKey: this.API_KEY!,
+      language: 'en'
+    });
+
+    const url = `https://newsapi.org/v2/top-headlines?${params.toString()}`;
+
+    try {
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`News API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json() as NewsResponse;
+      
+      if (data.status !== 'ok') {
+        throw new Error('News API returned an error status');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching top headlines from News API:', error);
+      throw new Error('Failed to fetch top headlines from API. Please try again later.');
     }
   }
 

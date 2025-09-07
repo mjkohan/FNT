@@ -28,7 +28,7 @@ class BookmarkService {
   }
 
   async getBookmarksByCategory(category: 'crypto' | 'stocks' | 'commodities'): Promise<Bookmark[]> {
-    const response = await fetch(`${this.baseUrl}/category/${category}`, {
+    const response = await fetch(`${this.baseUrl}?category=${category}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -95,12 +95,12 @@ class BookmarkService {
   }
 
   async toggleBookmark(bookmarkData: CreateBookmarkRequest): Promise<ToggleBookmarkResponse> {
-    const response = await fetch(`${this.baseUrl}/toggle`, {
+    const response = await fetch(this.baseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(bookmarkData),
+      body: JSON.stringify({ ...bookmarkData, action: 'toggle' }),
     });
 
     if (!response.ok) {

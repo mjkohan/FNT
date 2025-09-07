@@ -19,10 +19,10 @@ export interface NewsResponse {
 }
 
 export class NewsService {
-  private static readonly BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  private static readonly BASE_URL = '/api/news';
 
   static async fetchCryptoNews(query: string, page: number = 1): Promise<NewsResponse> {
-    const url = `${this.BASE_URL}/news/crypto?query=${encodeURIComponent(query)}&page=${page}`;
+    const url = `${this.BASE_URL}?type=crypto&query=${encodeURIComponent(query)}&page=${page}`;
 
     try {
       const response = await fetch(url);
@@ -45,7 +45,7 @@ export class NewsService {
   }
 
   static async fetchCommoditiesNews(query: string, page: number = 1): Promise<NewsResponse> {
-    const url = `${this.BASE_URL}/news/commodities?query=${encodeURIComponent(query)}&page=${page}`;
+    const url = `${this.BASE_URL}?type=commodities&query=${encodeURIComponent(query)}&page=${page}`;
 
     try {
       const response = await fetch(url);
@@ -68,7 +68,7 @@ export class NewsService {
   }
 
   static async fetchStockNews(query: string, page: number = 1): Promise<NewsResponse> {
-    const url = `${this.BASE_URL}/news/stocks?query=${encodeURIComponent(query)}&page=${page}`;
+    const url = `${this.BASE_URL}?type=stocks&query=${encodeURIComponent(query)}&page=${page}`;
 
     try {
       const response = await fetch(url);
@@ -87,6 +87,29 @@ export class NewsService {
     } catch (error) {
       console.error('Error fetching stock news:', error);
       throw new Error('Failed to fetch stock news. Please try again later.');
+    }
+  }
+
+  static async fetchTopHeadlines(country: string = 'us', category: string = 'business', pageSize: number = 10): Promise<NewsResponse> {
+    const url = `${this.BASE_URL}?type=top-headlines&country=${country}&category=${category}&pageSize=${pageSize}`;
+
+    try {
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`News API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch top headlines');
+      }
+
+      return result.data;
+    } catch (error) {
+      console.error('Error fetching top headlines:', error);
+      throw new Error('Failed to fetch top headlines. Please try again later.');
     }
   }
 

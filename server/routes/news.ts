@@ -11,6 +11,13 @@ const newsQuerySchema = z.object({
   page: z.coerce.number().int().min(1).max(10).default(1)
 });
 
+// Validation schema for top headlines
+const topHeadlinesSchema = z.object({
+  country: z.string().min(2).max(2).default('us'),
+  category: z.string().min(1).max(50).default('business'),
+  pageSize: z.coerce.number().int().min(1).max(100).default(10)
+});
+
 /**
  * GET /api/news/crypto
  * Fetch cryptocurrency news with caching
@@ -151,6 +158,30 @@ router.post('/stocks', asyncHandler(async (req, res) => {
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Failed to fetch stock news'
+    });
+  }
+}));
+
+/**
+ * GET /api/news/top-headlines
+ * Fetch top headlines with caching
+ */
+router.get('/top-headlines', asyncHandler(async (req, res) => {
+  const { country, category, pageSize } = topHeadlinesSchema.parse(req.query);
+  
+  try {
+    const newsData = await NewsService.fetchTopHeadlines(country, category, pageSize);
+    
+    res.json({
+      success: true,
+      data: newsData,
+      message: newsData.cached ? 'Data retrieved from cache' : 'Data fetched from API'
+    });
+  } catch (error) {
+    console.error('Top headlines fetch error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch top headlines'
     });
   }
 }));
