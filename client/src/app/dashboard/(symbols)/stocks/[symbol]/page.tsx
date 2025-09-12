@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import TradingViewChart from "@/components/TradingViewChart";
 import StockNewsSection from "@/components/StockNewsSection";
+import TradingViewFinancials from "@/components/TradingViewFinancials";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -294,6 +295,10 @@ export default function StockPage() {
           </CardContent>
         </Card>
       )}
+
+<div className="h-[500px]">
+            <TradingViewFinancials symbol={symbol} />
+          </div>
 
     </div>
   );

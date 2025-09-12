@@ -1,81 +1,88 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, memo } from 'react';
 import { useTheme } from "next-themes";
-
-let tvScriptLoadingPromise: Promise<void>;
 
 interface TradingViewChartProps {
     symbol: string;
     loader?: boolean;
+    interval?: string;
+    height?: string;
 }
 
-export default function TradingViewChart({ symbol }: TradingViewChartProps) {
-    const onLoadScriptRef = useRef<(() => void) | null>(null);
-    // Get current theme for chart styling
+function TradingViewChart({ symbol, interval = "D", height = "600px" }: TradingViewChartProps) {
+    const container = useRef<HTMLDivElement>(null);
     const { resolvedTheme } = useTheme();
 
-    useEffect(
-        () => {
-            onLoadScriptRef.current = createWidget;
+    useEffect(() => {
+        if (!container.current || !symbol || symbol === "NOT_FOUND") return;
 
-            if (!tvScriptLoadingPromise) {
-                tvScriptLoadingPromise = new Promise<void>((resolve) => {
-                    const script = document.createElement('script');
-                    script.id = 'tradingview-widget-loading-script';
-                    script.src = 'https://s3.tradingview.com/tv.js';
-                    script.type = 'text/javascript';
-                    script.onload = () => resolve();
+        // Clear any existing content
+        container.current.innerHTML = '';
 
-                    document.head.appendChild(script);
-                });
+        const script = document.createElement("script");
+        script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
+        script.type = "text/javascript";
+        script.async = true;
+        
+        // Determine theme
+        const chartTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
+        const backgroundColor = chartTheme === 'dark' ? '#0F0F0F' : '#ffffff';
+        const gridColor = chartTheme === 'dark' ? 'rgba(242, 242, 242, 0.06)' : 'rgba(242, 242, 242, 0.5)';
+        
+        script.innerHTML = `
+        {
+          "allow_symbol_change": true,
+          "calendar": false,
+          "details": false,
+          "hide_side_toolbar": true,
+          "hide_top_toolbar": false,
+          "hide_legend": false,
+          "hide_volume": false,
+          "hotlist": false,
+          "interval": "${interval}",
+          "locale": "en",
+          "save_image": true,
+          "style": "1",
+          "symbol": "${symbol}",
+          "theme": "${chartTheme}",
+          "timezone": "Etc/UTC",
+          "backgroundColor": "${backgroundColor}",
+          "gridColor": "${gridColor}",
+          "watchlist": [],
+          "withdateranges": false,
+          "compareSymbols": [],
+          "studies": [],
+          "autosize": true
+        }`;
+        
+        container.current.appendChild(script);
+
+        return () => {
+            // Cleanup script when component unmounts or dependencies change
+            if (container.current && script.parentNode) {
+                script.parentNode.removeChild(script);
             }
+        };
+    }, [symbol, interval, resolvedTheme]);
 
-            tvScriptLoadingPromise.then(() => onLoadScriptRef.current && onLoadScriptRef.current());
-
-            return () => { onLoadScriptRef.current = null; };
-
-            function createWidget() {
-                if (document.getElementById('technical-analysis-chart-demo') && 'TradingView' in window) {
-                    // Determine the theme to use - prefer resolvedTheme over theme for more accurate detection
-                    const chartTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
-                    
-                    (window as unknown as { TradingView: { widget: (config: unknown) => unknown } }).TradingView.widget({
-                        container_id: "technical-analysis-chart-demo",
-                        width: "100%",
-                        height: "100%",
-                        autosize: true,
-                        symbol: symbol,
-                        interval: "120",
-                        timezone: "exchange",
-                        theme: chartTheme,
-                        style: "1",
-                        withdateranges: true,
-                        hide_side_toolbar: false,
-                        allow_symbol_change: true,
-                        save_image: false,
-                        show_popup_button: true,
-                        popup_width: "1000",
-                        popup_height: "650",
-                        locale: "en",
-                        backgroundColor: chartTheme === 'dark' ? "#131316" : "#ffffff",
-                        enable_publishing: true,
-                    });
-                }
-            }
-        },
-        [symbol, resolvedTheme]
-    );
+    if (!symbol || symbol === "NOT_FOUND") {
+        return (
+            <div className="min-h-[600px] relative bg-muted flex items-center justify-center">
+                <div className="text-muted-foreground">No chart data available</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-[600px] relative bg-muted">
-            <div className="h-full">
-                {symbol && symbol !== "NOT_FOUND" && (
-                    <div className='tradingview-widget-container'>
-                        <div id='technical-analysis-chart-demo' />
-                    </div>
-                )}
-            </div>
+            <div 
+                className="tradingview-widget-container" 
+                ref={container} 
+                style={{ height: "100%", width: "100%" }}
+            />
         </div>
     );
 }
+
+export default memo(TradingViewChart);

@@ -340,6 +340,8 @@ export default function CryptoAnalyticsPage() {
           
         </Card>
 
+      
+
         {/* News Section */}
         <div className="space-y-4">
           <CryptoNewsSection 

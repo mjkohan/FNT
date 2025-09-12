@@ -332,6 +332,8 @@ export default function StockAnalyticsPage() {
           <TradingViewChart symbol={symbol} />
         </Card>
 
+        
+
         {/* News Section */}
         <div className="space-y-4">
           <StockNewsSection 

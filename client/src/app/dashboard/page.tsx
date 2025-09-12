@@ -20,6 +20,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTopHeadlines } from "@/hooks/useTopHeadlines";
 import { NewsService, NewsArticle, NewsResponse } from "@/services/newsService";
+import TradingViewTickerTape from "@/components/TradingViewTickerTape";
+import TradingViewCryptoHeatmap from "@/components/TradingViewCryptoHeatmap";
 
 interface HeadlinesContentProps {
   data: NewsResponse | undefined;
@@ -148,11 +150,12 @@ export default function DashboardHome() {
 
   return (
     <div className="flex-1 space-y-6 p-6">
-      {/* Welcome Section */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back!</h1>
-        
+      {/* Market Ticker Tape */}
+      <div className="-mt-6 -mx-6">
+        <TradingViewTickerTape />
       </div>
+
+      
 
       {/* Quick Stats */}
       
@@ -294,8 +297,22 @@ export default function DashboardHome() {
         </CardContent>
       </Card>
 
-      {/* Recent Activity & Quick Actions */}
-      
+      {/* Crypto Heatmap */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bitcoin className="h-5 w-5" />
+            Cryptocurrency Market Heatmap
+          </CardTitle>
+          <CardDescription>
+            Real-time cryptocurrency market performance overview
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          
+            <TradingViewCryptoHeatmap />
+        </CardContent>
+      </Card>
 
       
     </div>

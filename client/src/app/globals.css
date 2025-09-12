@@ -180,3 +180,168 @@
 button{
   cursor: pointer;
 }
+
+/* TradingView Widget Background Overrides */
+.tradingview-widget-container,
+.tradingview-widget-container__widget,
+.tradingview-widget-copyright {
+  background: var(--background) !important;
+}
+
+/* Override TradingView internal widget backgrounds */
+.tv-embed-widget-wrapper,
+.tv-embed-widget-wrapper__body,
+.tv-embed-widget-wrapper__header,
+.tv-embed-widget-wrapper__content {
+  background: var(--background) !important;
+}
+
+/* Target specific TradingView financials widget classes */
+.tv-widget-container,
+.tv-widget-container__body,
+.tv-widget-container__header,
+.tv-widget-container__content,
+.tv-widget-container__footer {
+  background: var(--background) !important;
+}
+
+/* Override TradingView's internal background variables */
+:root {
+  --tv-widget-background-color: var(--background) !important;
+  --tv-color-pane-background: var(--background) !important;
+  --tv-color-background: var(--background) !important;
+}
+
+.dark {
+  --tv-widget-background-color: var(--background) !important;
+  --tv-color-pane-background: var(--background) !important;
+  --tv-color-background: var(--background) !important;
+}
+
+/* Force all TradingView elements to use our background */
+.tradingview-widget-container *,
+.tradingview-widget-container__widget *,
+.tv-embed-widget-wrapper *,
+.tv-widget-container * {
+  background-color: var(--background) !important;
+}
+
+/* Specific overrides for financials widget */
+.tv-widget-financials,
+.tv-widget-financials__body,
+.tv-widget-financials__content,
+.tv-widget-financials__table {
+  background: var(--background) !important;
+}
+
+/* Override any iframe backgrounds */
+.tradingview-widget-container iframe {
+  background: var(--background) !important;
+}
+
+/* Target the specific div that contains the financial data */
+div[data-symbol] {
+  background: var(--background) !important;
+}
+
+/* Override any TradingView specific background classes */
+.tv-widget,
+.tv-widget__body,
+.tv-widget__content,
+.tv-widget__header,
+.tv-widget__footer {
+  background: var(--background) !important;
+}
+
+/* More aggressive overrides for TradingView widgets */
+.tradingview-widget-container .tv-embed-widget-wrapper,
+.tradingview-widget-container .tv-embed-widget-wrapper__body,
+.tradingview-widget-container .tv-widget-container,
+.tradingview-widget-container .tv-widget-container__body {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Target the specific financials widget content */
+.tradingview-widget-container [class*="tv-widget"],
+.tradingview-widget-container [class*="tv-embed"],
+.tradingview-widget-container [class*="financials"] {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Override any div with TradingView classes */
+div[class*="tv-"],
+div[class*="tradingview-"] {
+  background: var(--background) !important;
+}
+
+/* Force override for any element inside TradingView containers */
+.tradingview-widget-container div,
+.tradingview-widget-container__widget div {
+  background: var(--background) !important;
+}
+
+/* More specific overrides to match exact background color */
+.tradingview-widget-container,
+.tradingview-widget-container__widget,
+.tradingview-widget-container__widget > div,
+.tradingview-widget-container__widget > div > div {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Override TradingView's specific background classes with higher specificity */
+.tradingview-widget-container .tv-embed-widget-wrapper,
+.tradingview-widget-container .tv-embed-widget-wrapper__body,
+.tradingview-widget-container .tv-widget-container,
+.tradingview-widget-container .tv-widget-container__body,
+.tradingview-widget-container .tv-widget-container__content {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Target the main content area of the financials widget */
+.tradingview-widget-container [class*="tv-widget"] > div,
+.tradingview-widget-container [class*="tv-embed"] > div {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Override any remaining TradingView background elements */
+.tradingview-widget-container *[style*="background"],
+.tradingview-widget-container *[style*="background-color"] {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Specific override for financials widget */
+.tradingview-financials-override,
+.tradingview-financials-override *,
+.tradingview-financials-override div,
+.tradingview-financials-override .tv-embed-widget-wrapper,
+.tradingview-financials-override .tv-embed-widget-wrapper__body,
+.tradingview-financials-override .tv-widget-container,
+.tradingview-financials-override .tv-widget-container__body,
+.tradingview-financials-override .tv-widget-container__content {
+  background: var(--background) !important;
+  background-color: var(--background) !important;
+}
+
+/* Force all child elements to inherit the background */
+.tradingview-financials-override * {
+  background: inherit !important;
+  background-color: inherit !important;
+}
+.tv-card {
+  border-radius: 12px;     /* your radius */
+  overflow: hidden;        /* clips the iframe corners */
+  background: #0e1117;     /* your site card bg so it shows through */
+  box-shadow: 0 6px 20px rgba(0,0,0,.2);
+}
+.tradingview-widget-container,
+.tradingview-widget-container iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

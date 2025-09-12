@@ -335,6 +335,8 @@ export default function CommodityAnalyticsPage() {
           <TradingViewChart symbol={commodity.tvSymbol} />
         </Card>
 
+        
+
         {/* News Section */}
         <div className="space-y-4">
           <CommoditiesNewsSection 
