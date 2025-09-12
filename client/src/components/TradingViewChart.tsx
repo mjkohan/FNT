@@ -7,10 +7,9 @@ interface TradingViewChartProps {
     symbol: string;
     loader?: boolean;
     interval?: string;
-    height?: string;
 }
 
-function TradingViewChart({ symbol, interval = "D", height = "600px" }: TradingViewChartProps) {
+function TradingViewChart({ symbol, interval = "D" }: TradingViewChartProps) {
     const container = useRef<HTMLDivElement>(null);
     const { resolvedTheme } = useTheme();
 

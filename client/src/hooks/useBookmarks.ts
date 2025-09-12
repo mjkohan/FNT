@@ -28,7 +28,7 @@ export function useBookmarksByCategory(category: 'crypto' | 'stocks' | 'commodit
 
 // Hook for checking if an item is bookmarked
 export function useIsBookmarked(category: 'crypto' | 'stocks' | 'commodities', symbol: string) {
-  const { data: bookmarks, isLoading, error } = useBookmarks();
+  const { data: bookmarks} = useBookmarks();
   
   const isBookmarked = bookmarks?.some(bookmark => 
     bookmark.category === category && bookmark.symbol === symbol
