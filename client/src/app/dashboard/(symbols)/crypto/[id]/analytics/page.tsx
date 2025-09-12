@@ -188,7 +188,6 @@ export default function CryptoAnalyticsPage() {
       }
 
       const data = await response.json();
-      console.log(data)
       
 
       setAnalysisResult(data.analysis);

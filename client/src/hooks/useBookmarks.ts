@@ -29,13 +29,11 @@ export function useBookmarksByCategory(category: 'crypto' | 'stocks' | 'commodit
 // Hook for checking if an item is bookmarked
 export function useIsBookmarked(category: 'crypto' | 'stocks' | 'commodities', symbol: string) {
   const { data: bookmarks, isLoading, error } = useBookmarks();
-  console.log('useIsBookmarked:', { category, symbol, bookmarks, isLoading, error });
   
   const isBookmarked = bookmarks?.some(bookmark => 
     bookmark.category === category && bookmark.symbol === symbol
   ) ?? false;
   
-  console.log('isBookmarked result:', isBookmarked);
   return isBookmarked;
 }
 
@@ -75,14 +73,12 @@ export function useBookmarkOperations() {
     },
     onSuccess: async () => {
       // Force refetch from server to get the real data
-      console.log('Create success, refetching queries...');
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
       ]);
-      console.log('Queries invalidated and refetched');
       toast.success('Added to watchlist');
     },
   });
@@ -113,14 +109,12 @@ export function useBookmarkOperations() {
     },
     onSuccess: async () => {
       // Force refetch from server to get the real data
-      console.log('Update success, refetching queries...');
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
       ]);
-      console.log('Queries invalidated and refetched');
       toast.success('Bookmark updated');
     },
   });
@@ -146,14 +140,12 @@ export function useBookmarkOperations() {
     },
     onSuccess: async () => {
       // Force refetch from server to get the real data
-      console.log('Delete success, refetching queries...');
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
       ]);
-      console.log('Queries invalidated and refetched');
       toast.success('Removed from watchlist');
     },
   });
@@ -170,14 +162,12 @@ export function useBookmarkOperations() {
     },
     onSuccess: async (data) => {
       // Force refetch from server to get the real data
-      console.log('Toggle success, refetching queries...', data);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookmarks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'crypto'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'stocks'], refetchType: 'active' }),
         queryClient.invalidateQueries({ queryKey: ['bookmarks', 'commodities'], refetchType: 'active' })
       ]);
-      console.log('Queries invalidated and refetched');
       if (data.action === 'added') {
         toast.success('Added to watchlist');
       } else {
@@ -208,7 +198,6 @@ export function useBookmarkButton(
 
   const handleToggle = useCallback(() => {
     // Make the API call and let the mutation handle the refetch
-    console.log('Toggling bookmark:', { category, symbol });
     toggleBookmark({ category, symbol });
   }, [category, symbol, toggleBookmark]);
 

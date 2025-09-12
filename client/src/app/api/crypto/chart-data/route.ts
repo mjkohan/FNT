@@ -37,7 +37,6 @@ export async function GET(request: Request) {
 
     // Fetch data from Binance API
     const binanceUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}USDT&interval=${interval}&limit=${limitNum}`;
-    console.log(binanceUrl)
     const response = await fetch(binanceUrl, {
       headers: {
         'Content-Type': 'application/json',

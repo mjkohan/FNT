@@ -34,7 +34,6 @@ export default function BookmarkButton({
     handleToggle();
   };
   
-  console.log('BookmarkButton state:', { category, symbol, isBookmarked, isLoading });
   return (
     <Button
       variant={variant}

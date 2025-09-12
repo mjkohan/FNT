@@ -95,7 +95,6 @@ class BookmarkService {
   }
 
   toggleBookmark = async (bookmarkData: CreateBookmarkRequest): Promise<ToggleBookmarkResponse> => {
-    console.log('Base URL:', this.baseUrl);
 
     const response = await fetch(this.baseUrl, {
       method: 'POST',

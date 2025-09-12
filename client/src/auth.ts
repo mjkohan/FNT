@@ -5,7 +5,6 @@ import Credentials from "next-auth/providers/credentials"
 const API_URL = process.env.BACKEND_URL +'/api' || "http://localhost:3000/api";
 
 async function loginUser(credentials: { email: string; password: string }) {
-  console.log(credentials);
   const res = await fetch(`${API_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -37,14 +36,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             token: data.token as string,
           };
         }
-        // Return null for invalid credentials
         return null;
       },
     }),
   ],
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7, 
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -68,7 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   pages: {
     signIn: "/auth/login",
-    error: "/auth/login", // Error code passed in query string as ?error=
+    error: "/auth/login",
   },
 });
 

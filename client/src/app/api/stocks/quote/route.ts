@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
     if (!symbol) {
       return NextResponse.json({ error: "Symbol parameter is required" }, { status: 400 });
     }
-    console.log(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`);
     // Fetch quote from Finnhub
     const res = await fetch(
       `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${process.env.FINNHUB_API_KEY}`,
