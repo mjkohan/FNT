@@ -15,15 +15,17 @@ export const comparePassword = async (password: string, hashedPassword: string):
 };
 
 export const generateToken = (user: UserWithoutPassword): string => {
+  const payload: { id: number; email: string } = { 
+    id: user.id, 
+    email: user.email 
+  };
+  
   return jwt.sign(
-    { 
-      id: user.id, 
-      email: user.email 
-    },
+    payload,
     JWT_SECRET,
     { 
-      expiresIn: JWT_EXPIRES_IN 
-    }
+      expiresIn: JWT_EXPIRES_IN
+    } as jwt.SignOptions
   );
 };
 

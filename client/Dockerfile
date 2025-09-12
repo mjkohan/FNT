@@ -14,7 +14,7 @@ FROM base AS deps
 COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production --force && npm cache clean --force
 
 # Build stage
 FROM base AS builder

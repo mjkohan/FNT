@@ -9,7 +9,7 @@ const router = Router();
 const prisma = new PrismaClient();
 
 // Register new user
-router.post('/register', asyncHandler(async (req: Request, res: Response) => {
+router.post('/register', asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { email, password } = registerSchema.parse(req.body);
 
   // Check if user already exists
@@ -18,7 +18,8 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (existingUser) {
-    return res.status(400).json({ error: 'User with this email already exists' });
+    res.status(400).json({ error: 'User with this email already exists' });
+    return;
   }
 
   // Hash password
@@ -42,7 +43,7 @@ router.post('/register', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 // Login user
-router.post('/login', asyncHandler(async (req: Request, res: Response) => {
+router.post('/login', asyncHandler(async (req: Request, res: Response): Promise<void> => {
   const { email, password } = loginSchema.parse(req.body);
 
   // Find user
@@ -51,14 +52,16 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!user) {
-    return res.status(401).json({ error: 'Invalid email or password' });
+    res.status(401).json({ error: 'Invalid email or password' });
+    return;
   }
 
   // Check password
   const isPasswordValid = await comparePassword(password, user.password);
 
   if (!isPasswordValid) {
-    return res.status(401).json({ error: 'Invalid email or password' });
+    res.status(401).json({ error: 'Invalid email or password' });
+    return;
   }
 
   const userWithoutPassword = excludePassword(user);

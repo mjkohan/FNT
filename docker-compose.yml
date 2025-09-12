@@ -4,7 +4,7 @@ services:
   postgres_db:
     image: postgres:15
     hostname: postgres_db
-    container_name: postgres_db_dev
+    container_name: postgres_db
     restart: always
     environment:
       POSTGRES_DB: postgres
@@ -25,7 +25,7 @@ services:
   server:
     build: 
       context: ./server
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - '3000:3000'
     stdin_open: true
@@ -53,7 +53,7 @@ services:
   redis:
     image: redis:7-alpine
     hostname: redis
-    container_name: redis_dev
+    container_name: redis
     restart: always
     ports:
       - '6379:6379'
