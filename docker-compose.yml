@@ -21,7 +21,26 @@ services:
       retries: 20
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+  
+  # server:
+  #   build: 
+  #     context: ./server
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     postgres_db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - prisma-network
+  #   environment:
+  #     - NODE_ENV=production
+  #     - DATABASE_URL=postgresql://postgres:prisma@postgres_db:5432/postgres?schema=public
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #     - REDIS_PASSWORD=
   server:
     build: 
       context: ./server
@@ -40,6 +59,8 @@ services:
     volumes:
       - ./server:/usr/src/app
       - /usr/src/app/node_modules
+    env_file:
+      - ./server/.env.prod
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
@@ -47,6 +68,20 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
+
+  # client:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - '3001:3001'
+  #   depends_on:
+  #     - server
+  #   networks:
+  #     - prisma-network
+  #   environment:
+  #     - NODE_ENV=production
+  #     - NEXT_TELEMETRY_DISABLED=1
 
 
 

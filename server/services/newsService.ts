@@ -224,9 +224,7 @@ export class NewsService {
     }
   }
 
-  /**
-   * Clear cache for a specific query
-   */
+  
   static async clearCache(query: string): Promise<void> {
     try {
       const cacheKey = redisService.generateNewsCacheKey(query);
@@ -237,16 +235,13 @@ export class NewsService {
     }
   }
 
-  /**
-   * Get cache statistics
-   */
+  
   static async getCacheStats(): Promise<{
     totalKeys: number;
     memoryUsage: string;
     hitRate: number;
   }> {
     try {
-      // This is a simplified version - you can enhance it based on your needs
       return {
         totalKeys: 0,
         memoryUsage: 'N/A',
